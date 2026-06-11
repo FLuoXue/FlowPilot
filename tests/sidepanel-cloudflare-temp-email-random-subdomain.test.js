@@ -86,7 +86,7 @@ function createClassList(initial = []) {
 test('sidepanel html places cloudflare temp email controls in a standalone section', () => {
   const html = fs.readFileSync('sidepanel/sidepanel.html', 'utf8');
   assert.match(html, /id="cloudflare-temp-email-section"/);
-  assert.match(html, /id="btn-cloudflare-temp-email-usage-guide"/);
+  assert.doesNotMatch(html, /id="btn-cloudflare-temp-email-usage-guide"/);
   assert.match(html, /id="btn-cloudflare-temp-email-github"/);
   assert.match(html, /btn-cloudflare-temp-email-github"[^>]*>部署</);
   assert.match(html, /id="row-temp-email-lookup-mode"/);

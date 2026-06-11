@@ -1051,7 +1051,6 @@ const CLOUDFLARE_TEMP_EMAIL_SUBDOMAIN_MODE_NONE = 'none';
 const CLOUDFLARE_TEMP_EMAIL_SUBDOMAIN_MODE_RANDOM = 'random';
 const CLOUDFLARE_TEMP_EMAIL_SUBDOMAIN_MODE_FIXED = 'fixed';
 const DEFAULT_CLOUDFLARE_TEMP_EMAIL_SUBDOMAIN_MODE = CLOUDFLARE_TEMP_EMAIL_SUBDOMAIN_MODE_NONE;
-const NEW_USER_GUIDE_PROMPT_DISMISSED_STORAGE_KEY = 'multipage-new-user-guide-prompt-dismissed';
 const AUTO_SKIP_FAILURES_PROMPT_DISMISSED_STORAGE_KEY = 'multipage-auto-skip-failures-prompt-dismissed';
 const AUTO_RUN_FALLBACK_RISK_PROMPT_DISMISSED_STORAGE_KEY = 'multipage-auto-run-fallback-risk-prompt-dismissed';
 const CPA_PHONE_SIGNUP_PROMPT_DISMISSED_STORAGE_KEY = 'multipage-cpa-phone-signup-prompt-dismissed';
@@ -2324,29 +2323,6 @@ function setPromptDismissed(storageKey, dismissed) {
   }
 }
 
-function isNewUserGuidePromptDismissed() {
-  return isPromptDismissed(NEW_USER_GUIDE_PROMPT_DISMISSED_STORAGE_KEY);
-}
-
-function setNewUserGuidePromptDismissed(dismissed) {
-  setPromptDismissed(NEW_USER_GUIDE_PROMPT_DISMISSED_STORAGE_KEY, dismissed);
-}
-
-function shouldPromptNewUserGuide() {
-  if (isNewUserGuidePromptDismissed()) {
-    return false;
-  }
-  if (!btnContributionMode || btnContributionMode.disabled) {
-    return false;
-  }
-  if (typeof isContributionModeActiveForFlow === 'function'
-    ? isContributionModeActiveForFlow(latestState)
-    : Boolean(latestState?.accountContributionEnabled)) {
-    return false;
-  }
-  return true;
-}
-
 function getContributionPortalUrl() {
   return String(contributionContentService?.portalUrl || 'https://flowpilot.qlhazycoder.top').trim();
 }
@@ -2361,34 +2337,6 @@ function getContributionContentTargetId(state = latestState) {
     return getSelectedTargetIdForState(state, flowId);
   }
   return normalizeTargetIdForFlow(flowId, state?.targetId || '', getDefaultTargetIdForFlow(flowId));
-}
-
-function openNewUserGuidePrompt() {
-  return openActionModal({
-    title: '新手引导',
-    message: '如果你是第一次使用，可以先查看贡献页里的公告和使用教程。点击“查看引导”会自动打开贡献页面。',
-    alert: {
-      text: '本提示仅出现一次。',
-    },
-    actions: [
-      { id: null, label: '取消', variant: 'btn-ghost' },
-      { id: 'confirm', label: '查看引导', variant: 'btn-primary' },
-    ],
-  });
-}
-
-async function maybeShowNewUserGuidePrompt() {
-  if (!shouldPromptNewUserGuide()) {
-    return false;
-  }
-
-  setNewUserGuidePromptDismissed(true);
-  const choice = await openNewUserGuidePrompt();
-  if (choice === 'confirm') {
-    openExternalUrl(getContributionPortalUrl());
-    return true;
-  }
-  return false;
 }
 
 function getContributionContentPromptScope(snapshot = currentContributionContentSnapshot) {
@@ -15965,11 +15913,6 @@ async function startAutoRunFromCurrentSettings() {
     : getRunCountValue();
   registerPendingAutoRunStartRunCount(requestedTotalRuns);
 
-  // 站点内容刷新只影响提示/广告展示，不应阻塞自动流程启动。
-  refreshContributionContentHint().catch((error) => {
-    console.warn('Failed to refresh contribution content hint before auto run:', error);
-  });
-
   if (typeof persistCurrentSettingsForAction === 'function') {
     await persistCurrentSettingsForAction();
   }
@@ -19670,12 +19613,7 @@ Promise.allSettled([
     updatePanelModeUI();
     updateButtonStates();
     updateStatusDisplay(latestState);
-    return refreshContributionContentHint()
-      .catch((error) => {
-        console.warn('Failed to refresh contribution content hint during initialization:', error);
-        return null;
-      })
-      .then(() => maybeShowNewUserGuidePrompt());
+    return null;
   }).catch((err) => {
     console.error('Failed to initialize sidepanel state:', err);
   });
