@@ -17,8 +17,13 @@ test('background forwards mail rule metadata to Hotmail helper and shared picker
   );
   assert.match(
     source,
-    /pickVerificationMessageWithTimeFallback\(fetchResult\.messages,\s*\{[\s\S]*requiredKeywords:\s*pollPayload\.requiredKeywords\s*\|\|\s*\[\],[\s\S]*codePatterns:\s*pollPayload\.codePatterns\s*\|\|\s*\[\]/,
-    'Hotmail API 轮询应把 rule metadata 传给共享验证码筛选器'
+    /const matchFilters = \{[\s\S]*?requiredKeywords:\s*pollPayload\.requiredKeywords\s*\|\|\s*\[\],[\s\S]*?codePatterns:\s*pollPayload\.codePatterns\s*\|\|\s*\[\],[\s\S]*?\};/,
+    'Hotmail API 轮询应把 rule metadata 收敛进 matchFilters'
+  );
+  assert.match(
+    source,
+    /pickVerificationMessageWithTimeFallback\(fetchResult\.messages,\s*matchFilters\)/,
+    'Hotmail API 轮询应把 matchFilters（含 rule metadata）传给共享验证码筛选器'
   );
   assert.match(
     source,

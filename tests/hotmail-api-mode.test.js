@@ -39,7 +39,12 @@ test('Hotmail API对接应接入微软邮箱 helper 而不是旧远程服务占�
   );
   assert.match(
     background,
-    /pickVerificationMessageWithTimeFallback\(fetchResult\.messages, \{/,
-    '步骤 4\/7 应继续复用现有验证码筛选与时间回退逻辑'
+    /pickVerificationMessageWithTimeFallback\(fetchResult\.messages,\s*matchFilters\)/,
+    '步骤 4/7 默认路径应继续复用现有验证码筛选与时间回退逻辑'
+  );
+  assert.match(
+    background,
+    /pollPayload\.strictTimeWindow[\s\S]*?pickVerificationMessageWithFallback\(fetchResult\.messages,\s*matchFilters\)/,
+    'strictTimeWindow 流程（如 mimo）应改用严格匹配，不做忽略时间窗的回退'
   );
 });

@@ -188,6 +188,8 @@ const rowGrokWebchat2ApiUrl = document.getElementById('row-grok-webchat2api-url'
 const inputGrokWebchat2ApiUrl = document.getElementById('input-grok-webchat2api-url');
 const rowGrokWebchat2ApiKey = document.getElementById('row-grok-webchat2api-key');
 const inputGrokWebchat2ApiKey = document.getElementById('input-grok-webchat2api-key');
+const inputMimoMimo2ApiUrl = document.getElementById('input-mimo-mimo2api-url');
+const inputMimoMimo2ApiPassword = document.getElementById('input-mimo-mimo2api-password');
 const rowOpenAiWebchatUrl = document.getElementById('row-openai-webchat-url');
 const inputOpenAiWebchatUrl = document.getElementById('input-openai-webchat-url');
 const rowOpenAiWebchatKey = document.getElementById('row-openai-webchat-key');
@@ -1885,6 +1887,7 @@ const PRIVACY_MASKED_INPUT_IDS = Object.freeze([
   'input-openai-webchat-url',
   'input-kiro-rs-url',
   'input-grok-webchat2api-url',
+  'input-mimo-mimo2api-url',
   'input-email-prefix',
   'input-inbucket-host',
   'input-inbucket-mailbox',
@@ -5078,6 +5081,12 @@ function collectSettingsPayload() {
   const currentKiroRsKeyValue = typeof inputKiroRsKey !== 'undefined' && inputKiroRsKey
     ? String(inputKiroRsKey.value ?? '').trim()
     : null;
+  const currentMimoMimo2ApiUrlValue = typeof inputMimoMimo2ApiUrl !== 'undefined' && inputMimoMimo2ApiUrl
+    ? String(inputMimoMimo2ApiUrl.value ?? '').trim()
+    : null;
+  const currentMimoMimo2ApiPasswordValue = typeof inputMimoMimo2ApiPassword !== 'undefined' && inputMimoMimo2ApiPassword
+    ? String(inputMimoMimo2ApiPassword.value ?? '')
+    : null;
   const currentOpenAiWebchatUrlValue = typeof inputOpenAiWebchatUrl !== 'undefined' && inputOpenAiWebchatUrl
     ? String(inputOpenAiWebchatUrl.value ?? '').trim()
     : '';
@@ -5149,6 +5158,12 @@ function collectSettingsPayload() {
     kiroRsKey: currentKiroRsKeyValue !== null
       ? currentKiroRsKeyValue
       : String(latestState?.kiroRsKey || '').trim(),
+    mimoMimo2ApiUrl: currentMimoMimo2ApiUrlValue !== null
+      ? currentMimoMimo2ApiUrlValue
+      : String(latestState?.mimoMimo2ApiUrl || '').trim(),
+    mimoMimo2ApiAdminPassword: currentMimoMimo2ApiPasswordValue !== null
+      ? currentMimoMimo2ApiPasswordValue
+      : String(latestState?.mimoMimo2ApiAdminPassword || ''),
     ...createSharedWebchatConfigPatch(sharedWebchatUrl, sharedWebchatAdminKey),
     openaiWebchatUploadEnabled: openAiWebchatUploadEnabled,
     vpsUrl: inputVpsUrl.value.trim(),
@@ -11978,6 +11993,12 @@ function applySettingsState(state) {
   if (typeof inputKiroRsKey !== 'undefined' && inputKiroRsKey) {
     inputKiroRsKey.value = String(state?.kiroRsKey || '');
   }
+  if (typeof inputMimoMimo2ApiUrl !== 'undefined' && inputMimoMimo2ApiUrl) {
+    inputMimoMimo2ApiUrl.value = String(state?.mimoMimo2ApiUrl || '').trim();
+  }
+  if (typeof inputMimoMimo2ApiPassword !== 'undefined' && inputMimoMimo2ApiPassword) {
+    inputMimoMimo2ApiPassword.value = String(state?.mimoMimo2ApiAdminPassword || '');
+  }
   if (typeof inputGrokWebchat2ApiUrl !== 'undefined' && inputGrokWebchat2ApiUrl) {
     inputGrokWebchat2ApiUrl.value = String(getSharedWebchatUrlFromState(state) || '').trim();
   }
@@ -16654,6 +16675,16 @@ selectPlusAccountAccessStrategy?.addEventListener('change', () => {
   input?.addEventListener('input', () => {
     markSettingsDirty(true);
     setKiroRsConnectionTestStatus('未测试');
+    scheduleSettingsAutoSave();
+  });
+  input?.addEventListener('blur', () => {
+    saveSettings({ silent: true }).catch(() => { });
+  });
+});
+
+[inputMimoMimo2ApiUrl, inputMimoMimo2ApiPassword].forEach((input) => {
+  input?.addEventListener('input', () => {
+    markSettingsDirty(true);
     scheduleSettingsAutoSave();
   });
   input?.addEventListener('blur', () => {

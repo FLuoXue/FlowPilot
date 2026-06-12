@@ -422,6 +422,69 @@ test('pickVerificationMessageWithTimeFallback preserves runtime code patterns wh
   assert.equal(result.usedTimeFallback, true);
 });
 
+test('strict matching (pickVerificationMessageWithFallback) ignores stale mail outside the time window while time fallback grabs it', () => {
+  // 复现 mimo + 复用邮箱场景：新验证码邮件尚未到达，邮箱里只剩一封历史旧验证码邮件。
+  const requestedAt = Date.UTC(2026, 5, 12, 10, 0, 0);
+  const staleOnly = [
+    {
+      id: 'stale-xiaomi',
+      subject: '小米账号验证码 111111',
+      from: { emailAddress: { address: 'noreply@notice.xiaomi.com' } },
+      bodyPreview: '验证码：111111',
+      receivedDateTime: '2026-06-12T08:00:00.000Z', // 早于 requestedAt 两小时
+    },
+  ];
+  const filters = {
+    afterTimestamp: requestedAt,
+    senderFilters: ['noreply@notice.xiaomi.com'],
+    subjectFilters: ['小米', '验证码'],
+    requiredKeywords: ['小米', '验证码'],
+    codePatterns: [{ source: '(?:验证码)[：:\\s为是]*(\\d{6})', flags: 'gi' }],
+    excludeCodes: [],
+  };
+
+  // 旧的“时间回退”会忽略时间窗，把历史旧验证码邮件误判为命中（正是 bug 现象）。
+  const lenient = pickVerificationMessageWithTimeFallback(staleOnly, filters);
+  assert.equal(lenient.match?.code, '111111');
+  assert.equal(lenient.usedTimeFallback, true);
+
+  // 严格时间窗模式下，窗口外的历史旧邮件不会被命中（返回 null，让轮询继续等待新邮件）。
+  const strict = pickVerificationMessageWithFallback(staleOnly, filters);
+  assert.equal(strict.match, null);
+});
+
+test('strict matching picks the newest in-window mail and skips stale history', () => {
+  const requestedAt = Date.UTC(2026, 5, 12, 10, 0, 0);
+  const messages = [
+    {
+      id: 'stale-xiaomi',
+      subject: '小米账号验证码 111111',
+      from: { emailAddress: { address: 'noreply@notice.xiaomi.com' } },
+      bodyPreview: '验证码：111111',
+      receivedDateTime: '2026-06-12T08:00:00.000Z',
+    },
+    {
+      id: 'fresh-xiaomi',
+      subject: '小米账号验证码 222222',
+      from: { emailAddress: { address: 'noreply@notice.xiaomi.com' } },
+      bodyPreview: '验证码：222222',
+      receivedDateTime: '2026-06-12T10:00:20.000Z', // requestedAt 之后 20 秒到达的新邮件
+    },
+  ];
+  const filters = {
+    afterTimestamp: requestedAt,
+    senderFilters: ['noreply@notice.xiaomi.com'],
+    subjectFilters: ['小米', '验证码'],
+    requiredKeywords: ['小米', '验证码'],
+    codePatterns: [{ source: '(?:验证码)[：:\\s为是]*(\\d{6})', flags: 'gi' }],
+    excludeCodes: [],
+  };
+
+  const strict = pickVerificationMessageWithFallback(messages, filters);
+  assert.equal(strict.match?.message.id, 'fresh-xiaomi');
+  assert.equal(strict.match?.code, '222222');
+});
+
 test('buildHotmailMailApiLatestUrl includes email, client id, refresh token, and mailbox', () => {
   const url = new URL(buildHotmailMailApiLatestUrl({
     apiUrl: 'https://example.com/api/mail-new',

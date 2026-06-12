@@ -77,6 +77,7 @@
           <option value="openai" selected>Codex / OpenAI</option>
           <option value="kiro">Kiro</option>
           <option value="grok">Grok</option>
+          <option value="mimo">Xiaomi MiMo</option>
         </select>
       </div>
       <div class="data-row" id="row-source-selector">
@@ -278,6 +279,22 @@
           <span id="display-grok-sso-cookie" class="data-value mono">未提取</span>
           <button id="btn-copy-grok-sso" class="btn btn-ghost btn-xs data-inline-btn" type="button">复制</button>
           <button id="btn-clear-grok-sso" class="btn btn-ghost btn-xs data-inline-btn" type="button">清空</button>
+        </div>
+      </div>
+      <div class="data-row" id="row-mimo-mimo2api-url" style="display:none;">
+        <span class="data-label">mimo2api</span>
+        <input type="text" id="input-mimo-mimo2api-url" class="data-input"
+          placeholder="请输入 mimo2api 地址，例如 https://example.com" />
+      </div>
+      <div class="data-row" id="row-mimo-mimo2api-password" style="display:none;">
+        <span class="data-label">管理密码</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-mimo-mimo2api-password" class="data-input data-input-with-icon"
+            placeholder="请输入 mimo2api 管理密码" />
+          <button id="btn-toggle-mimo-mimo2api-password" class="input-icon-btn" type="button"
+            data-password-toggle="input-mimo-mimo2api-password" data-show-label="显示 mimo2api 管理密码"
+            data-hide-label="隐藏 mimo2api 管理密码" aria-label="显示 mimo2api 管理密码"
+            title="显示 mimo2api 管理密码"></button>
         </div>
       </div>
       <div class="data-row module-divider-start" id="row-custom-password">
@@ -1894,6 +1911,8 @@
   <script src="../flows/kiro/workflow.js"></script>
   <script src="../flows/grok/index.js"></script>
   <script src="../flows/grok/workflow.js"></script>
+  <script src="../flows/mimo/index.js"></script>
+  <script src="../flows/mimo/workflow.js"></script>
   <script src="../flows/index.js"></script>
   <script src="../core/flow-kernel/flow-registry.js"></script>
   <script src="../shared/contribution-registry.js"></script>

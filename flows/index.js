@@ -16,6 +16,24 @@
       id: 'grok',
       path: 'flows/grok/',
     },
+    mimo: {
+      id: 'mimo',
+      path: 'flows/mimo/',
+    },
+  });
+
+  const FLOW_DEFINITION_GLOBALS = Object.freeze({
+    openai: 'MultiPageOpenAiFlowDefinition',
+    kiro: 'MultiPageKiroFlowDefinition',
+    grok: 'MultiPageGrokFlowDefinition',
+    mimo: 'MultiPageMimoFlowDefinition',
+  });
+
+  const FLOW_WORKFLOW_GLOBALS = Object.freeze({
+    openai: 'MultiPageOpenAiWorkflow',
+    kiro: 'MultiPageKiroWorkflow',
+    grok: 'MultiPageGrokWorkflow',
+    mimo: 'MultiPageMimoWorkflow',
   });
 
   function normalizeFlowId(value = '') {
@@ -34,16 +52,8 @@
     }
     return {
       ...baseEntry,
-      definition: normalized === 'openai'
-        ? (rootScope.MultiPageOpenAiFlowDefinition || null)
-        : (normalized === 'kiro'
-          ? (rootScope.MultiPageKiroFlowDefinition || null)
-          : (rootScope.MultiPageGrokFlowDefinition || null)),
-      workflow: normalized === 'openai'
-        ? (rootScope.MultiPageOpenAiWorkflow || null)
-        : (normalized === 'kiro'
-          ? (rootScope.MultiPageKiroWorkflow || null)
-          : (rootScope.MultiPageGrokWorkflow || null)),
+      definition: rootScope[FLOW_DEFINITION_GLOBALS[normalized]] || null,
+      workflow: rootScope[FLOW_WORKFLOW_GLOBALS[normalized]] || null,
     };
   }
 

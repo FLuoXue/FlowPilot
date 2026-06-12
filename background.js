@@ -7,6 +7,8 @@ importScripts(
   'flows/kiro/workflow.js',
   'flows/grok/index.js',
   'flows/grok/workflow.js',
+  'flows/mimo/index.js',
+  'flows/mimo/workflow.js',
   'flows/index.js',
   'core/flow-kernel/flow-registry.js',
   'shared/contribution-registry.js',
@@ -40,14 +42,17 @@ importScripts(
   'core/flow-kernel/runtime-state.js',
   'flows/kiro/background/state.js',
   'flows/grok/background/state.js',
+  'flows/mimo/background/state.js',
   'flows/kiro/background/credential-artifact.js',
   'background/contribution/adapters/kiro-builder-id.js',
   'flows/kiro/background/register-runner.js',
   'flows/grok/background/register-runner.js',
+  'flows/mimo/background/register-runner.js',
   'flows/kiro/background/desktop-client.js',
   'flows/kiro/background/desktop-authorize-runner.js',
   'flows/kiro/background/publisher-kiro-rs.js',
   'flows/grok/background/publisher-webchat2api.js',
+  'flows/mimo/background/publisher-mimo2api.js',
   'flows/openai/background/session-reader.js',
   'flows/openai/background/publisher-webchat.js',
   'background/email-local-part-helpers.js',
@@ -57,6 +62,7 @@ importScripts(
   'flows/openai/mail-rules.js',
   'flows/kiro/mail-rules.js',
   'flows/grok/mail-rules.js',
+  'flows/mimo/mail-rules.js',
   'background/flow-mail-polling.js',
   'background/message-router.js',
   'background/verification-flow.js',
@@ -399,6 +405,7 @@ const runtimeStateHelpers = self.MultiPageBackgroundRuntimeState?.createRuntimeS
 }) || null;
 const kiroStateHelpers = self.MultiPageBackgroundKiroState || null;
 const grokStateHelpers = self.MultiPageBackgroundGrokState || null;
+const mimoStateHelpers = self.MultiPageBackgroundMimoState || null;
 const DEFAULT_REGISTRATION_EMAIL_STATE = registrationEmailStateHelpers?.DEFAULT_REGISTRATION_EMAIL_STATE || {
   current: '',
   previous: '',
@@ -473,6 +480,9 @@ function buildStateViewWithRuntimeState(state = {}) {
   }
   if (grokStateHelpers?.buildStateView) {
     nextState = grokStateHelpers.buildStateView(nextState);
+  }
+  if (mimoStateHelpers?.buildStateView) {
+    nextState = mimoStateHelpers.buildStateView(nextState);
   }
   return nextState;
 }
@@ -1272,6 +1282,8 @@ const PERSISTED_SETTING_DEFAULTS = {
   kiroRsKey: '',
   grokWebchat2ApiUrl: '',
   grokWebchat2ApiAdminKey: '',
+  mimoMimo2ApiUrl: '',
+  mimoMimo2ApiAdminPassword: '',
   openaiWebchatUrl: '',
   openaiWebchatAdminKey: '',
   openaiWebchatUploadEnabled: false,
@@ -1486,6 +1498,8 @@ const SETTINGS_SCHEMA_VIEW_KEYS = Object.freeze([
   'kiroRsKey',
   'grokWebchat2ApiUrl',
   'grokWebchat2ApiAdminKey',
+  'mimoMimo2ApiUrl',
+  'mimoMimo2ApiAdminPassword',
   'openaiWebchatUrl',
   'openaiWebchatAdminKey',
   'openaiWebchatUploadEnabled',
@@ -3236,10 +3250,12 @@ function normalizePersistentSettingValue(key, value) {
     case 'kiroRsUrl':
     case 'grokWebchat2ApiUrl':
     case 'openaiWebchatUrl':
+    case 'mimoMimo2ApiUrl':
       return String(value || '').trim();
     case 'kiroRsKey':
     case 'grokWebchat2ApiAdminKey':
     case 'openaiWebchatAdminKey':
+    case 'mimoMimo2ApiAdminPassword':
       return String(value || '').trim();
     case 'openaiWebchatUploadEnabled':
       return Boolean(value);
@@ -3902,6 +3918,8 @@ function buildSettingsStatePatchFromFlatUpdates(updates = {}) {
   assignIfUpdated('ipProxyMode', ['services', 'proxy', 'mode']);
   assignIfUpdated('kiroRsUrl', ['flows', 'kiro', 'targets', 'kiro-rs', 'baseUrl']);
   assignIfUpdated('kiroRsKey', ['flows', 'kiro', 'targets', 'kiro-rs', 'apiKey']);
+  assignIfUpdated('mimoMimo2ApiUrl', ['flows', 'mimo', 'targets', 'mimo2api', 'baseUrl']);
+  assignIfUpdated('mimoMimo2ApiAdminPassword', ['flows', 'mimo', 'targets', 'mimo2api', 'adminPassword']);
   if (hasUpdate('grokWebchat2ApiUrl') || hasUpdate('openaiWebchatUrl')) {
     const sharedWebchatUrl = hasUpdate('openaiWebchatUrl') ? updates.openaiWebchatUrl : updates.grokWebchat2ApiUrl;
     setSettingsStatePatchValue(patch, ['flows', 'openai', 'targets', 'webchat', 'baseUrl'], sharedWebchatUrl);
@@ -4129,6 +4147,9 @@ function buildFreshAutoRunKeepState(prevState = {}) {
   }
   if (typeof grokStateHelpers?.buildFreshKeepState === 'function') {
     Object.assign(keepState, grokStateHelpers.buildFreshKeepState(sourceState));
+  }
+  if (typeof mimoStateHelpers?.buildFreshKeepState === 'function') {
+    Object.assign(keepState, mimoStateHelpers.buildFreshKeepState(sourceState));
   }
   if (Object.prototype.hasOwnProperty.call(sourceState, 'settingsSchemaVersion')) {
     keepState.settingsSchemaVersion = Number(sourceState.settingsSchemaVersion) || 0;
@@ -4497,6 +4518,38 @@ async function clearGrokSsoCookies() {
   const nextState = await getState();
   broadcastDataUpdate(patch);
   await addLog('Grok SSO Cookie 已清空。', 'info', { nodeId: 'grok-extract-sso-cookie' });
+  return { ok: true, state: nextState };
+}
+
+async function clearMimoCookies() {
+  const currentState = await getState();
+  const patch = typeof mimoStateHelpers?.buildRuntimeStatePatch === 'function'
+    ? mimoStateHelpers.buildRuntimeStatePatch(currentState, {
+      cookie: {
+        currentCookie: '',
+        cookies: [],
+        extractedAt: 0,
+      },
+      upload: {
+        status: '',
+        uploadedAt: 0,
+        message: '',
+        targetUrl: '',
+      },
+    })
+    : {
+      mimoCookie: '',
+      mimoCookies: [],
+      mimoCookieExtractedAt: 0,
+      mimoUploadStatus: '',
+      mimoUploadedAt: 0,
+      mimoUploadMessage: '',
+      mimoUploadTargetUrl: '',
+    };
+  await setState(patch);
+  const nextState = await getState();
+  broadcastDataUpdate(patch);
+  await addLog('小米登录 Cookie 已清空。', 'info', { nodeId: 'mimo-extract-cookie' });
   return { ok: true, state: nextState };
 }
 
@@ -6117,14 +6170,19 @@ async function pollHotmailVerificationCode(step, state, pollPayload = {}) {
       await addLog(`步骤 ${step}：正在通过 API对接 轮询 Hotmail 邮件（${attempt}/${maxAttempts}）...`, 'info');
       const fetchResult = await fetchHotmailMailboxMessages(account, HOTMAIL_MAILBOXES);
       account = fetchResult.account;
-      const matchResult = pickVerificationMessageWithTimeFallback(fetchResult.messages, {
+      const matchFilters = {
         afterTimestamp: pollPayload.filterAfterTimestamp || 0,
         senderFilters: pollPayload.senderFilters || [],
         subjectFilters: pollPayload.subjectFilters || [],
         requiredKeywords: pollPayload.requiredKeywords || [],
         codePatterns: pollPayload.codePatterns || [],
         excludeCodes: pollPayload.excludeCodes || [],
-      });
+      };
+      // strictTimeWindow（mimo 等复用邮箱的流程使用）只接受时间窗内邮件并取最新一封，
+      // 禁用“窗口内找不到就忽略时间窗、回退取任意旧邮件”的逻辑，避免误取邮箱里更旧的历史验证码邮件。
+      const matchResult = pollPayload.strictTimeWindow
+        ? pickVerificationMessageWithFallback(fetchResult.messages, matchFilters)
+        : pickVerificationMessageWithTimeFallback(fetchResult.messages, matchFilters);
       const match = matchResult.match;
 
       if (match?.code) {
@@ -10031,6 +10089,14 @@ function getDownstreamStateResets(step, state = {}) {
       return grokResets;
     }
   }
+  if (String(stepKey || '').trim().toLowerCase().startsWith('mimo-')) {
+    const mimoResets = typeof mimoStateHelpers?.buildDownstreamResetPatch === 'function'
+      ? mimoStateHelpers.buildDownstreamResetPatch(stepKey, state)
+      : {};
+    if (Object.keys(mimoResets).length > 0) {
+      return mimoResets;
+    }
+  }
   const plusRuntimeResets = {
     plusCheckoutTabId: null,
     plusCheckoutUrl: null,
@@ -11087,6 +11153,16 @@ async function handleNodeData(nodeId, payload) {
     }
     return;
   }
+  if (String(nodeDefinition?.flowId || '').trim().toLowerCase() === 'mimo') {
+    const updates = typeof mimoStateHelpers?.applyNodeCompletionPayload === 'function'
+      ? mimoStateHelpers.applyNodeCompletionPayload(state, payload || {})
+      : {};
+    if (Object.keys(updates).length > 0) {
+      await setState(updates);
+      broadcastDataUpdate(updates);
+    }
+    return;
+  }
   const step = getStepIdByNodeIdForState(nodeId, state);
   if (!Number.isInteger(step) || step <= 0) {
     return;
@@ -11151,6 +11227,13 @@ const AUTO_RUN_BACKGROUND_COMPLETED_STEP_KEYS = new Set([
   'grok-submit-profile',
   'grok-extract-sso-cookie',
   'grok-upload-sso-to-webchat2api',
+  'mimo-open-signup-page',
+  'mimo-submit-register-form',
+  'mimo-submit-verification-code',
+  'mimo-verify-email',
+  'mimo-goto-ai-studio',
+  'mimo-extract-cookie',
+  'mimo-upload-account-to-mimo2api',
 ]);
 const STEP_COMPLETION_SIGNAL_STEP_KEYS = new Set([
   'fill-password',
@@ -13812,6 +13895,7 @@ const OPENAI_AUTH_INJECT_FILES = ['content/utils.js', 'content/operation-delay.j
 const KIRO_REGISTER_INJECT_FILES = ['flows/openai/index.js', 'flows/kiro/index.js', 'flows/grok/index.js', 'flows/index.js', 'core/flow-kernel/flow-registry.js', 'core/flow-kernel/source-registry.js', 'shared/kiro-timeouts.js', 'content/utils.js', 'flows/kiro/content/register-page.js'];
 const KIRO_DESKTOP_AUTHORIZE_INJECT_FILES = ['flows/openai/index.js', 'flows/kiro/index.js', 'flows/grok/index.js', 'flows/index.js', 'core/flow-kernel/flow-registry.js', 'core/flow-kernel/source-registry.js', 'shared/kiro-timeouts.js', 'content/utils.js', 'flows/kiro/content/desktop-authorize-page.js'];
 const GROK_REGISTER_INJECT_FILES = ['flows/openai/index.js', 'flows/kiro/index.js', 'flows/grok/index.js', 'flows/index.js', 'core/flow-kernel/flow-registry.js', 'core/flow-kernel/source-registry.js', 'content/utils.js', 'flows/grok/content/register-page.js'];
+const MIMO_REGISTER_INJECT_FILES = ['flows/openai/index.js', 'flows/kiro/index.js', 'flows/grok/index.js', 'flows/mimo/index.js', 'flows/index.js', 'core/flow-kernel/flow-registry.js', 'core/flow-kernel/source-registry.js', 'content/utils.js', 'flows/mimo/content/register-page.js'];
 const panelBridge = self.MultiPageBackgroundPanelBridge?.createPanelBridge({
   chrome,
   addLog,
@@ -13879,12 +13963,18 @@ const grokMailRules = self.MultiPageGrokMailRules?.createGrokMailRules({
   MAIL_2925_VERIFICATION_INTERVAL_MS,
   MAIL_2925_VERIFICATION_MAX_ATTEMPTS,
 });
+const mimoMailRules = self.MultiPageMimoMailRules?.createMimoMailRules({
+  LUCKMAIL_PROVIDER,
+  MAIL_2925_VERIFICATION_INTERVAL_MS,
+  MAIL_2925_VERIFICATION_MAX_ATTEMPTS,
+});
 const mailRuleRegistry = self.MultiPageBackgroundMailRuleRegistry?.createMailRuleRegistry({
   defaultFlowId: DEFAULT_ACTIVE_FLOW_ID,
   flowBuilders: {
     openai: openAiMailRules,
     kiro: kiroMailRules,
     grok: grokMailRules,
+    mimo: mimoMailRules,
   },
 });
 const flowMailPollingService = self.MultiPageBackgroundFlowMailPolling?.createFlowMailPollingService({
@@ -14302,6 +14392,28 @@ const grokRegisterRunner = self.MultiPageBackgroundGrokRegisterRunner?.createGro
   GROK_REGISTER_INJECT_FILES,
   markCurrentRegistrationAccountUsed,
 });
+const mimoRegisterRunner = self.MultiPageBackgroundMimoRegisterRunner?.createMimoRegisterRunner({
+  addLog,
+  chrome,
+  ensureContentScriptReadyOnTab,
+  completeNodeFromBackground,
+  generatePassword,
+  getTabId,
+  getState,
+  isTabAlive,
+  pollFlowVerificationCode: flowMailPollingService?.pollFlowVerificationCode,
+  registerTab,
+  resolveSignupEmailForFlow,
+  reuseOrCreateTab,
+  sendToContentScriptResilient,
+  setPasswordState,
+  setState,
+  sleepWithStop,
+  throwIfStopped,
+  waitForTabStableComplete,
+  MIMO_REGISTER_INJECT_FILES,
+  markCurrentRegistrationAccountUsed,
+});
 const kiroBuilderIdContributionAdapter = self.MultiPageBackgroundKiroBuilderIdContributionAdapter?.createKiroBuilderIdContributionAdapter?.({
   addLog,
   fetchImpl: typeof fetch === 'function' ? fetch.bind(globalThis) : null,
@@ -14358,6 +14470,13 @@ const kiroPublisher = self.MultiPageBackgroundKiroPublisherKiroRs?.createKiroRsP
   setState,
 });
 const grokWebchat2ApiPublisher = self.MultiPageBackgroundGrokPublisherWebchat2Api?.createGrokWebchat2ApiPublisher({
+  addLog,
+  completeNodeFromBackground,
+  fetchImpl: typeof fetch === 'function' ? fetch.bind(globalThis) : null,
+  getState,
+  setState,
+});
+const mimoMimo2ApiPublisher = self.MultiPageBackgroundMimoPublisherMimo2Api?.createMimoMimo2ApiPublisher({
   addLog,
   completeNodeFromBackground,
   fetchImpl: typeof fetch === 'function' ? fetch.bind(globalThis) : null,
@@ -14478,6 +14597,13 @@ const stepExecutorsByKey = {
   'grok-submit-profile': (state) => grokRegisterRunner.executeGrokSubmitProfile(state),
   'grok-extract-sso-cookie': (state) => grokRegisterRunner.executeGrokExtractSsoCookie(state),
   'grok-upload-sso-to-webchat2api': (state) => grokWebchat2ApiPublisher.executeGrokUploadSsoToWebchat2Api(state),
+  'mimo-open-signup-page': (state) => mimoRegisterRunner.executeMimoOpenSignupPage(state),
+  'mimo-submit-register-form': (state) => mimoRegisterRunner.executeMimoSubmitRegisterForm(state),
+  'mimo-submit-verification-code': (state) => mimoRegisterRunner.executeMimoSubmitVerificationCode(state),
+  'mimo-verify-email': (state) => mimoRegisterRunner.executeMimoVerifyEmail(state),
+  'mimo-goto-ai-studio': (state) => mimoRegisterRunner.executeMimoGotoAiStudio(state),
+  'mimo-extract-cookie': (state) => mimoRegisterRunner.executeMimoExtractCookie(state),
+  'mimo-upload-account-to-mimo2api': (state) => mimoMimo2ApiPublisher.executeMimoUploadAccountToMimo2Api(state),
 };
 const messageRouter = self.MultiPageBackgroundMessageRouter?.createMessageRouter({
   addLog,
@@ -14494,6 +14620,7 @@ const messageRouter = self.MultiPageBackgroundMessageRouter?.createMessageRouter
   clearAutoRunTimerAlarm,
   clearFreeReusablePhoneActivation,
   clearGrokSsoCookies,
+  clearMimoCookies,
   clearLuckmailRuntimeState,
   clearStep5ProfileStatePatch,
   clearYydsMailRuntimeState,
