@@ -963,6 +963,22 @@
           }
         }
         await log('步骤 5：已到达 AI Studio。', 'ok', nodeId);
+        // 首次登录 AI Studio 会弹出用户协议：自动勾选并点击确定
+        try {
+          await ensureContentReady(tabId, {
+            logMessage: 'AI Studio 页面内容脚本未就绪，正在等待页面恢复...',
+          });
+          const agreementResult = await sendMimoCommand('mimo-confirm-ai-studio-agreement', {}, {
+            step: 5,
+            timeoutMs: 40000,
+          });
+          if (agreementResult?.agreed) {
+            await log('步骤 5：已自动同意 AI Studio 用户协议。', 'ok', nodeId);
+          }
+        } catch (agreementError) {
+          // 协议弹窗可能未出现或结构变化，记录告警但不阻断后续 Cookie 提取
+          await log(`步骤 5：自动同意协议未完成：${getErrorMessage(agreementError)}`, 'warn', nodeId);
+        }
         await completeNode(nodeId, {
           mimoPageUrl: MIMO_AI_STUDIO_LOGIN_URL,
           ...buildMimoRuntimePatch({

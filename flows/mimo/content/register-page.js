@@ -8,6 +8,12 @@ const MIMO_REGISTER_SUBMIT_TEXT_PATTERN = /立即注册|立即註冊|注册|註�
 const MIMO_SEND_TEXT_PATTERN = /傳送信件|发送信件|傳送|发送/i;
 const MIMO_VERIFICATION_READY_TIMEOUT_MS = 90 * 1000;
 const MIMO_REQUIRED_COOKIE_NAMES = ['serviceToken', 'userId', 'xiaomichatbot_ph'];
+const MIMO_AI_STUDIO_AGREEMENT_CHECKBOX_SELECTOR = '#agreement-checkbox';
+const MIMO_AI_STUDIO_AGREEMENT_CONFIRM_SELECTORS = [
+  '[data-track-id="agreement_confirm_btn"]',
+  '[data-track-name="agreement_confirm"]',
+];
+const MIMO_AI_STUDIO_AGREEMENT_CONFIRM_TEXT_PATTERN = /确定|確定|同意|agree|confirm|continue/i;
 
 const MIMO_EMAIL_SELECTORS = [
   'input[type="email"]',
@@ -410,6 +416,58 @@ async function clickMimoVerifyEmailSend() {
   return { submitted: true, state: getMimoPageState(), url: location.href };
 }
 
+function findMimoAiStudioAgreementCheckbox() {
+  const checkbox = document.querySelector(MIMO_AI_STUDIO_AGREEMENT_CHECKBOX_SELECTOR);
+  return checkbox && isVisibleMimoElement(checkbox) ? checkbox : null;
+}
+
+function isMimoAiStudioAgreementChecked(checkbox) {
+  if (!checkbox) return false;
+  // 自定义勾选框选中后内部会出现实心圆点（如 <div class="...bg-gray-600...">）
+  if (checkbox.querySelector('div')) return true;
+  const ariaChecked = checkbox.getAttribute('aria-checked');
+  if (ariaChecked === 'true') return true;
+  return checkbox.dataset?.checked === 'true' || checkbox.dataset?.state === 'checked';
+}
+
+function findMimoAiStudioAgreementConfirmButton() {
+  const bySelector = MIMO_AI_STUDIO_AGREEMENT_CONFIRM_SELECTORS
+    .map((selector) => Array.from(document.querySelectorAll(selector)))
+    .flat()
+    .find(isVisibleMimoElement);
+  if (bySelector) return bySelector;
+  return findMimoClickableByText(MIMO_AI_STUDIO_AGREEMENT_CONFIRM_TEXT_PATTERN);
+}
+
+async function confirmMimoAiStudioAgreement() {
+  // AI Studio 首次登录会弹出协议：需勾选复选框，待"确定"按钮可用后点击
+  const checkbox = await waitForMimo(findMimoAiStudioAgreementCheckbox, { timeoutMs: 15000, intervalMs: 300 });
+  if (!checkbox) {
+    // 未出现协议弹窗，视为无需同意
+    return { submitted: true, agreed: false, state: getMimoPageState(), url: location.href };
+  }
+  if (!isMimoAiStudioAgreementChecked(checkbox)) {
+    simulateMimoClick(checkbox);
+    await sleep(400);
+    // 受控组件首次点击未必立即生效，未选中时重试一次
+    if (!isMimoAiStudioAgreementChecked(findMimoAiStudioAgreementCheckbox() || checkbox)) {
+      simulateMimoClick(checkbox);
+      await sleep(400);
+    }
+  }
+  // 勾选后"确定"按钮才会从 disabled 变为可点
+  const confirmButton = await waitForMimo(() => {
+    const button = findMimoAiStudioAgreementConfirmButton();
+    return button && !button.disabled ? button : null;
+  }, { timeoutMs: 10000, intervalMs: 300 });
+  if (!confirmButton) {
+    throw new Error('未找到可用的 AI Studio 协议确定按钮。');
+  }
+  simulateMimoClick(confirmButton);
+  await sleep(800);
+  return { submitted: true, agreed: true, state: getMimoPageState(), url: location.href };
+}
+
 async function executeMimoCommand(command, payload = {}) {
   switch (command) {
     case 'mimo-open-signup-page':
@@ -420,6 +478,8 @@ async function executeMimoCommand(command, payload = {}) {
       return submitMimoVerificationCode(payload);
     case 'mimo-verify-email-send':
       return clickMimoVerifyEmailSend(payload);
+    case 'mimo-confirm-ai-studio-agreement':
+      return confirmMimoAiStudioAgreement(payload);
     case 'mimo-extract-cookie':
       return extractMimoCookie(payload);
     case 'GET_PAGE_STATE':

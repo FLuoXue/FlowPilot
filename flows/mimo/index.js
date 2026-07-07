@@ -100,6 +100,7 @@
           'mimo-submit-register-form',
           'mimo-submit-verification-code',
           'mimo-verify-email-send',
+          'mimo-confirm-ai-studio-agreement',
           'mimo-extract-cookie',
         ],
       },
