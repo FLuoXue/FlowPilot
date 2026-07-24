@@ -53,6 +53,10 @@ test('flow registry exposes canonical flow and target metadata', () => {
     ['openai-plus', 'shared-auto-run', 'openai-oauth', 'openai-step6', 'openai-target-webchat', 'service-account', 'service-email', 'service-proxy']
   );
   assert.deepEqual(
+    flowRegistry.getVisibleGroupIds('openai', 'chatgpt2api'),
+    ['openai-plus', 'shared-auto-run', 'openai-oauth', 'openai-step6', 'openai-target-chatgpt2api', 'service-account', 'service-email', 'service-proxy']
+  );
+  assert.deepEqual(
     flowRegistry.getVisibleGroupIds('kiro', 'kiro-rs'),
     ['kiro-runtime-status', 'shared-auto-run', 'kiro-target-kiro-rs', 'service-account', 'service-email', 'service-proxy']
   );
@@ -61,12 +65,43 @@ test('flow registry exposes canonical flow and target metadata', () => {
     ['grok-runtime-status', 'shared-auto-run', 'grok-target-webchat2api', 'service-account', 'service-email', 'service-proxy']
   );
   assert.deepEqual(
+    flowRegistry.getVisibleGroupIds('grok', 'sub2api'),
+    ['grok-runtime-status', 'shared-auto-run', 'grok-target-sub2api', 'service-account', 'service-email', 'service-proxy']
+  );
+  assert.deepEqual(
+    flowRegistry.getVisibleGroupIds('grok', 'grok2api'),
+    ['grok-runtime-status', 'shared-auto-run', 'grok-target-grok2api', 'service-account', 'service-email', 'service-proxy']
+  );
+  assert.deepEqual(
+    flowRegistry.getSettingsGroupDefinition('grok-target-sub2api')?.rowIds,
+    [
+      'row-sub2api-url',
+      'row-sub2api-email',
+      'row-sub2api-password',
+      'row-grok-sub2api-grok2api-upload',
+      'row-grok2api-url',
+      'row-grok2api-key',
+      'row-grok-sub2api-group',
+      'row-grok-sub2api-account-priority',
+      'row-grok-sub2api-default-proxy',
+    ]
+  );
+  assert.deepEqual(
+    flowRegistry.getSettingsGroupDefinition('grok-runtime-status')?.rowIds,
+    [
+      'row-grok-register-status',
+      'row-grok-sso-status',
+      'row-grok-sso-settings',
+      'row-grok-upload-status',
+    ]
+  );
+  assert.deepEqual(
     flowRegistry.getTargetOptions('openai').map((entry) => entry.id),
-    ['cpa', 'sub2api', 'codex2api', 'webchat']
+    ['cpa', 'sub2api', 'codex2api', 'webchat', 'chatgpt2api']
   );
   assert.deepEqual(
     flowRegistry.getTargetOptions('grok').map((entry) => entry.id),
-    ['webchat2api']
+    ['webchat2api', 'grok2api', 'sub2api']
   );
   assert.equal(
     flowRegistry.getTargetCapabilities('openai', 'webchat')?.supportsPhoneSignup,
@@ -74,6 +109,14 @@ test('flow registry exposes canonical flow and target metadata', () => {
   );
   assert.equal(
     flowRegistry.getTargetCapabilities('openai', 'webchat')?.supportsPhoneVerificationSettings,
+    false
+  );
+  assert.equal(
+    flowRegistry.getTargetCapabilities('openai', 'chatgpt2api')?.supportsPhoneSignup,
+    false
+  );
+  assert.equal(
+    flowRegistry.getTargetCapabilities('openai', 'chatgpt2api')?.supportsPhoneVerificationSettings,
     false
   );
   assert.deepEqual(
@@ -92,7 +135,7 @@ test('flow registry exposes canonical flow and target metadata', () => {
   assert.equal(flowRegistry.getFlowCapabilities('openai').supportsAccountContribution, true);
   assert.equal(flowRegistry.getFlowCapabilities('kiro').supportsAccountContribution, true);
   assert.equal(flowRegistry.getFlowCapabilities('grok').supportsAccountContribution, false);
-  assert.deepEqual(flowRegistry.getFlowCapabilities('grok').supportedTargetIds, ['webchat2api']);
+  assert.deepEqual(flowRegistry.getFlowCapabilities('grok').supportedTargetIds, ['webchat2api', 'grok2api', 'sub2api']);
   assert.deepEqual(
     flowRegistry.getFlowCapabilities('openai').contributionAdapterIds,
     ['openai-oauth', 'openai-codex-file', 'openai-sub2api-file']
@@ -121,6 +164,8 @@ test('settings schema normalizes view input into canonical nested namespaces', (
     openaiWebchatUrl: ' https://webchat.example.com/admin ',
     openaiWebchatAdminKey: ' webchat-key ',
     openaiWebchatUploadEnabled: true,
+    openaiChatgpt2ApiUrl: ' https://chatgpt2api.example.com/admin ',
+    openaiChatgpt2ApiAdminKey: ' chatgpt2api-key ',
     stepExecutionRangeByFlow: {
       openai: { enabled: true, fromStep: 2, toStep: 9 },
       kiro: { enabled: true, fromStep: 1, toStep: 9 },
@@ -136,6 +181,8 @@ test('settings schema normalizes view input into canonical nested namespaces', (
   assert.equal(normalized.flows.openai.plus.plusAccountAccessStrategy, 'sub2api_codex_session');
   assert.equal(normalized.flows.openai.targets.webchat.baseUrl, 'https://webchat.example.com/admin');
   assert.equal(normalized.flows.openai.targets.webchat.apiKey, 'webchat-key');
+  assert.equal(normalized.flows.openai.targets.chatgpt2api.baseUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(normalized.flows.openai.targets.chatgpt2api.apiKey, 'chatgpt2api-key');
   assert.equal(normalized.flows.grok.targets.webchat2api.baseUrl, 'https://webchat.example.com/admin');
   assert.equal(normalized.flows.grok.targets.webchat2api.apiKey, 'webchat-key');
   assert.equal(normalized.flows.openai.webchatUpload.enabled, false);
@@ -153,6 +200,29 @@ test('settings schema normalizes view input into canonical nested namespaces', (
     fromStep: 2,
     toStep: 4,
   });
+});
+
+test('settings schema retires legacy GPC and Plus Auto configurations', () => {
+  const { settingsSchema } = loadApis();
+  const schema = settingsSchema.createSettingsSchema();
+
+  for (const legacyPaymentMethod of ['gpc-helper', 'plus-auto']) {
+    const normalized = schema.normalizeSettingsState({
+      activeFlowId: 'openai',
+      plusModeEnabled: true,
+      plusPaymentMethod: legacyPaymentMethod,
+      gpcCardKey: 'GPC-AAAA1111-BBBB2222-CCCC3333',
+      autoCdk: 'QZ-AAAA-BBBB-CCCC',
+    });
+    const view = schema.buildSettingsView(normalized);
+
+    assert.equal(normalized.flows.openai.plus.plusModeEnabled, false);
+    assert.equal(normalized.flows.openai.plus.plusPaymentMethod, 'paypal');
+    assert.equal(view.plusModeEnabled, false);
+    assert.equal(view.plusPaymentMethod, 'paypal');
+    assert.equal(Object.prototype.hasOwnProperty.call(view, 'gpcCardKey'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(view, 'autoCdk'), false);
+  }
 });
 
 test('settings schema shares webchat connection config between OpenAI and Grok targets', () => {
@@ -191,6 +261,168 @@ test('settings schema shares webchat connection config between OpenAI and Grok t
   assert.equal(fromOpenAiNested.flows.grok.targets.webchat2api.apiKey, 'nested-openai-key');
 });
 
+test('settings schema shares SUB2API credentials while keeping Grok policy independent', () => {
+  const { settingsSchema } = loadApis();
+  const schema = settingsSchema.createSettingsSchema();
+
+  const normalized = schema.normalizeSettingsState({
+    activeFlowId: 'grok',
+    targetId: 'sub2api',
+    sub2apiUrl: ' https://sub2api.example.com/admin/accounts ',
+    sub2apiEmail: ' owner@example.com ',
+    sub2apiPassword: 'shared-secret',
+    sub2apiGroupName: 'openai-pool',
+    sub2apiGroupNames: ['openai-pool'],
+    sub2apiAccountPriority: 7,
+    sub2apiDefaultProxyName: 'openai-proxy',
+    grokSub2apiGroupName: 'grok-pool',
+    grokSub2apiGroupNames: ['grok-default', 'grok-pool'],
+    grokSub2apiAccountPriority: 3,
+    grokSub2apiDefaultProxyName: 'xai-proxy',
+    grok2ApiUrl: ' https://grok2api.example.com/admin/account ',
+    grok2ApiAdminKey: ' grok2api-key ',
+    grokSub2apiGrok2ApiUploadEnabled: true,
+  });
+  const view = schema.buildSettingsView(normalized);
+  const openAiTarget = normalized.flows.openai.targets.sub2api;
+  const grokTarget = normalized.flows.grok.targets.sub2api;
+
+  assert.equal(normalized.flows.grok.selectedTargetId, 'sub2api');
+  assert.equal(openAiTarget.sub2apiUrl, 'https://sub2api.example.com/admin/accounts');
+  assert.equal(grokTarget.sub2apiUrl, openAiTarget.sub2apiUrl);
+  assert.equal(grokTarget.sub2apiEmail, 'owner@example.com');
+  assert.equal(grokTarget.sub2apiPassword, 'shared-secret');
+  assert.equal(openAiTarget.sub2apiGroupName, 'openai-pool');
+  assert.equal(openAiTarget.sub2apiAccountPriority, 7);
+  assert.equal(openAiTarget.sub2apiDefaultProxyName, 'openai-proxy');
+  assert.equal(grokTarget.sub2apiGroupName, 'grok-pool');
+  assert.deepEqual(grokTarget.sub2apiGroupNames, ['grok-default', 'grok-pool']);
+  assert.equal(grokTarget.sub2apiAccountPriority, 3);
+  assert.equal(grokTarget.sub2apiDefaultProxyName, 'xai-proxy');
+  assert.equal(normalized.flows.grok.targets.grok2api.baseUrl, 'https://grok2api.example.com/admin/account');
+  assert.equal(normalized.flows.grok.targets.grok2api.apiKey, 'grok2api-key');
+  assert.equal(grokTarget.grok2apiUploadEnabled, true);
+  assert.equal(Object.hasOwn(grokTarget, 'webchat2apiUploadEnabled'), false);
+  assert.equal(Object.hasOwn(openAiTarget, 'grok2apiUploadEnabled'), false);
+  assert.equal(view.grokSub2apiGroupName, 'grok-pool');
+  assert.deepEqual(view.grokSub2apiGroupNames, ['grok-default', 'grok-pool']);
+  assert.equal(view.grokSub2apiAccountPriority, 3);
+  assert.equal(view.grokSub2apiDefaultProxyName, 'xai-proxy');
+  assert.equal(view.grok2ApiUrl, 'https://grok2api.example.com/admin/account');
+  assert.equal(view.grok2ApiAdminKey, 'grok2api-key');
+  assert.equal(view.grokSub2apiGrok2ApiUploadEnabled, true);
+
+  const conflictingSettingsState = {
+    flows: {
+      openai: {
+        targets: {
+          sub2api: {
+            sub2apiUrl: 'https://openai-canonical.example.com',
+            sub2apiEmail: 'openai-canonical@example.com',
+            sub2apiPassword: 'openai-canonical-secret',
+          },
+        },
+      },
+      grok: {
+        targets: {
+          sub2api: {
+            sub2apiUrl: 'https://grok-canonical.example.com',
+            sub2apiEmail: 'grok-canonical@example.com',
+            sub2apiPassword: 'grok-canonical-secret',
+          },
+        },
+      },
+    },
+  };
+  const canonicalConflict = schema.normalizeSettingsState({ settingsState: conflictingSettingsState });
+  assert.equal(canonicalConflict.flows.openai.targets.sub2api.sub2apiUrl, 'https://openai-canonical.example.com');
+  assert.equal(canonicalConflict.flows.grok.targets.sub2api.sub2apiEmail, 'openai-canonical@example.com');
+  assert.equal(canonicalConflict.flows.grok.targets.sub2api.sub2apiPassword, 'openai-canonical-secret');
+
+  const explicitFlatConflict = schema.normalizeSettingsState({
+    settingsState: conflictingSettingsState,
+    sub2apiUrl: 'https://flat.example.com',
+    sub2apiEmail: 'flat@example.com',
+    sub2apiPassword: 'flat-secret',
+  });
+  assert.equal(explicitFlatConflict.flows.openai.targets.sub2api.sub2apiUrl, 'https://flat.example.com');
+  assert.equal(explicitFlatConflict.flows.grok.targets.sub2api.sub2apiEmail, 'flat@example.com');
+  assert.equal(explicitFlatConflict.flows.grok.targets.sub2api.sub2apiPassword, 'flat-secret');
+
+  const grokCanonicalFallback = schema.normalizeSettingsState({
+    settingsState: {
+      flows: {
+        grok: conflictingSettingsState.flows.grok,
+      },
+    },
+  });
+  assert.equal(grokCanonicalFallback.flows.openai.targets.sub2api.sub2apiUrl, 'https://grok-canonical.example.com');
+  assert.equal(grokCanonicalFallback.flows.openai.targets.sub2api.sub2apiEmail, 'grok-canonical@example.com');
+  assert.equal(grokCanonicalFallback.flows.grok.targets.sub2api.sub2apiPassword, 'grok-canonical-secret');
+});
+
+test('Grok SUB2API group policy starts empty and remains empty until configured', () => {
+  const { settingsSchema } = loadApis();
+  const schema = settingsSchema.createSettingsSchema();
+
+  const normalized = schema.normalizeSettingsState({
+    activeFlowId: 'grok',
+    targetId: 'sub2api',
+  });
+  const view = schema.buildSettingsView(normalized);
+
+  assert.equal(normalized.flows.grok.targets.sub2api.sub2apiGroupName, '');
+  assert.deepEqual(normalized.flows.grok.targets.sub2api.sub2apiGroupNames, []);
+  assert.equal(view.grokSub2apiGroupName, '');
+  assert.deepEqual(view.grokSub2apiGroupNames, []);
+  assert.equal(normalized.flows.grok.targets.sub2api.grok2apiUploadEnabled, false);
+  assert.equal(Object.hasOwn(normalized.flows.grok.targets.sub2api, 'webchat2apiUploadEnabled'), false);
+  assert.equal(view.grokSub2apiGrok2ApiUploadEnabled, false);
+});
+
+test('settings schema migrates the retired Grok SUB2API webchat switch to grok2api', () => {
+  const { settingsSchema } = loadApis();
+  const schema = settingsSchema.createSettingsSchema();
+  const normalized = schema.normalizeSettingsState({
+    grokSub2apiWebchat2ApiUploadEnabled: true,
+    settingsState: {
+      flows: {
+        grok: {
+          targets: {
+            sub2api: { webchat2apiUploadEnabled: true },
+          },
+        },
+      },
+    },
+  });
+  const view = schema.buildSettingsView(normalized);
+
+  assert.equal(normalized.flows.grok.targets.sub2api.grok2apiUploadEnabled, true);
+  assert.equal(Object.hasOwn(normalized.flows.grok.targets.sub2api, 'webchat2apiUploadEnabled'), false);
+  assert.equal(view.grokSub2apiGrok2ApiUploadEnabled, true);
+  assert.equal(Object.hasOwn(view, 'grokSub2apiWebchat2ApiUploadEnabled'), false);
+});
+
+test('settings schema keeps ChatGPT2API config independent from shared webchat config', () => {
+  const { settingsSchema } = loadApis();
+  const schema = settingsSchema.createSettingsSchema();
+
+  const normalized = schema.normalizeSettingsState({
+    openaiWebchatUrl: 'https://shared-webchat.example.com/admin',
+    openaiWebchatAdminKey: 'shared-webchat-key',
+    openaiChatgpt2ApiUrl: ' https://chatgpt2api.example.com/admin ',
+    openaiChatgpt2ApiAdminKey: ' chatgpt2api-key ',
+  });
+  const view = schema.buildSettingsView(normalized);
+
+  assert.equal(normalized.flows.openai.targets.webchat.baseUrl, 'https://shared-webchat.example.com/admin');
+  assert.equal(normalized.flows.grok.targets.webchat2api.baseUrl, 'https://shared-webchat.example.com/admin');
+  assert.equal(normalized.flows.openai.targets.chatgpt2api.baseUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(normalized.flows.openai.targets.chatgpt2api.apiKey, 'chatgpt2api-key');
+  assert.equal(view.openaiChatgpt2ApiUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(view.openaiChatgpt2ApiAdminKey, 'chatgpt2api-key');
+});
+
 test('settings schema lets explicit flat step range override stale canonical range', () => {
   const { settingsSchema } = loadApis();
   const schema = settingsSchema.createSettingsSchema();
@@ -226,6 +458,8 @@ test('settings schema can project canonical state into a read view without legac
     openaiWebchatUrl: 'https://webchat.example.com/admin',
     openaiWebchatAdminKey: 'key-webchat',
     openaiWebchatUploadEnabled: true,
+    openaiChatgpt2ApiUrl: 'https://chatgpt2api.example.com/admin',
+    openaiChatgpt2ApiAdminKey: 'key-chatgpt2api',
     plusAccountAccessStrategy: 'sub2api_codex_session',
   });
   const view = schema.buildSettingsView(normalized);
@@ -237,6 +471,8 @@ test('settings schema can project canonical state into a read view without legac
   assert.equal(view.openaiWebchatUrl, 'https://webchat.example.com/admin');
   assert.equal(view.openaiWebchatAdminKey, 'key-webchat');
   assert.equal(view.openaiWebchatUploadEnabled, false);
+  assert.equal(view.openaiChatgpt2ApiUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(view.openaiChatgpt2ApiAdminKey, 'key-chatgpt2api');
   assert.equal(view.plusAccountAccessStrategy, 'sub2api_codex_session');
   assert.equal(view.settingsSchemaVersion, 5);
   assert.equal(view.settingsState.activeFlowId, 'kiro');

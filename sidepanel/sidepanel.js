@@ -84,6 +84,7 @@ const btnClearLog = document.getElementById('btn-clear-log');
 const configMenuShell = document.getElementById('config-menu-shell');
 const btnConfigMenu = document.getElementById('btn-config-menu');
 const configMenu = document.getElementById('config-menu');
+const selectUiLanguage = document.getElementById('select-ui-language');
 const btnExportSettings = document.getElementById('btn-export-settings');
 const btnImportSettings = document.getElementById('btn-import-settings');
 const inputImportSettingsFile = document.getElementById('input-import-settings-file');
@@ -113,6 +114,19 @@ const rowSub2ApiAccountPriority = document.getElementById('row-sub2api-account-p
 const inputSub2ApiAccountPriority = document.getElementById('input-sub2api-account-priority');
 const rowSub2ApiDefaultProxy = document.getElementById('row-sub2api-default-proxy');
 const inputSub2ApiDefaultProxy = document.getElementById('input-sub2api-default-proxy');
+const rowGrokSub2ApiGroup = document.getElementById('row-grok-sub2api-group');
+const inputGrokSub2ApiGroup = document.getElementById('input-grok-sub2api-group');
+const grokSub2ApiGroupPickerRoot = document.getElementById('grok-sub2api-group-picker');
+const btnGrokSub2ApiGroupMenu = document.getElementById('btn-grok-sub2api-group-menu');
+const grokSub2ApiGroupCurrent = document.getElementById('grok-sub2api-group-current');
+const grokSub2ApiGroupMenu = document.getElementById('grok-sub2api-group-menu');
+const btnAddGrokSub2ApiGroup = document.getElementById('btn-add-grok-sub2api-group');
+const rowGrokSub2ApiAccountPriority = document.getElementById('row-grok-sub2api-account-priority');
+const inputGrokSub2ApiAccountPriority = document.getElementById('input-grok-sub2api-account-priority');
+const rowGrokSub2ApiDefaultProxy = document.getElementById('row-grok-sub2api-default-proxy');
+const inputGrokSub2ApiDefaultProxy = document.getElementById('input-grok-sub2api-default-proxy');
+const rowGrokSub2ApiGrok2ApiUpload = document.getElementById('row-grok-sub2api-grok2api-upload');
+const inputGrokSub2ApiGrok2ApiUploadEnabled = document.getElementById('input-grok-sub2api-grok2api-upload-enabled');
 const rowIpProxyEnabled = document.getElementById('row-ip-proxy-enabled');
 const inputIpProxyEnabled = document.getElementById('input-ip-proxy-enabled');
 const btnToggleIpProxySection = document.getElementById('btn-toggle-ip-proxy-section');
@@ -190,6 +204,10 @@ const rowGrokWebchat2ApiKey = document.getElementById('row-grok-webchat2api-key'
 const inputGrokWebchat2ApiKey = document.getElementById('input-grok-webchat2api-key');
 const inputMimoMimo2ApiUrl = document.getElementById('input-mimo-mimo2api-url');
 const inputMimoMimo2ApiPassword = document.getElementById('input-mimo-mimo2api-password');
+const rowGrok2ApiUrl = document.getElementById('row-grok2api-url');
+const inputGrok2ApiUrl = document.getElementById('input-grok2api-url');
+const rowGrok2ApiKey = document.getElementById('row-grok2api-key');
+const inputGrok2ApiKey = document.getElementById('input-grok2api-key');
 const rowOpenAiWebchatUrl = document.getElementById('row-openai-webchat-url');
 const inputOpenAiWebchatUrl = document.getElementById('input-openai-webchat-url');
 const rowOpenAiWebchatKey = document.getElementById('row-openai-webchat-key');
@@ -199,6 +217,12 @@ const inputOpenAiWebchatUploadEnabled = document.getElementById('input-openai-we
 const displayOpenAiWebchatUploadHint = document.getElementById('display-openai-webchat-upload-hint');
 const rowOpenAiWebchatUploadStatus = document.getElementById('row-openai-webchat-upload-status');
 const displayOpenAiWebchatUploadStatus = document.getElementById('display-openai-webchat-upload-status');
+const rowOpenAiChatgpt2ApiUrl = document.getElementById('row-openai-chatgpt2api-url');
+const inputOpenAiChatgpt2ApiUrl = document.getElementById('input-openai-chatgpt2api-url');
+const rowOpenAiChatgpt2ApiKey = document.getElementById('row-openai-chatgpt2api-key');
+const inputOpenAiChatgpt2ApiKey = document.getElementById('input-openai-chatgpt2api-key');
+const rowOpenAiChatgpt2ApiUploadStatus = document.getElementById('row-openai-chatgpt2api-upload-status');
+const displayOpenAiChatgpt2ApiUploadStatus = document.getElementById('display-openai-chatgpt2api-upload-status');
 const rowKiroWebStatus = document.getElementById('row-kiro-web-status');
 const displayKiroWebStatus = document.getElementById('display-kiro-web-status');
 const rowKiroLoginUrl = document.getElementById('row-kiro-login-url');
@@ -209,8 +233,8 @@ const rowGrokRegisterStatus = document.getElementById('row-grok-register-status'
 const displayGrokRegisterStatus = document.getElementById('display-grok-register-status');
 const rowGrokSsoStatus = document.getElementById('row-grok-sso-status');
 const displayGrokSsoStatus = document.getElementById('display-grok-sso-status');
-const rowGrokWebchat2ApiUploadStatus = document.getElementById('row-grok-webchat2api-upload-status');
-const displayGrokWebchat2ApiUploadStatus = document.getElementById('display-grok-webchat2api-upload-status');
+const rowGrokUploadStatus = document.getElementById('row-grok-upload-status');
+const displayGrokUploadStatus = document.getElementById('display-grok-upload-status');
 const rowGrokSsoSettings = document.getElementById('row-grok-sso-settings');
 const displayGrokSsoCookie = document.getElementById('display-grok-sso-cookie');
 const btnCopyGrokSso = document.getElementById('btn-copy-grok-sso');
@@ -220,8 +244,6 @@ const rowPlusMode = document.getElementById('row-plus-mode');
 const inputPlusModeEnabled = document.getElementById('input-plus-mode-enabled');
 const rowPlusPaymentMethod = document.getElementById('row-plus-payment-method');
 const selectPlusPaymentMethod = document.getElementById('select-plus-payment-method');
-const btnGpcCardKeyPurchase = document.getElementById('btn-gpc-card-key-purchase');
-const btnAutoCdkPurchase = document.getElementById('btn-auto-cdk-purchase');
 const plusPaymentMethodCaption = document.getElementById('plus-payment-method-caption');
 const rowPlusAccountAccessStrategy = document.getElementById('row-plus-account-access-strategy');
 const selectPlusAccountAccessStrategy = document.getElementById('select-plus-account-access-strategy');
@@ -239,12 +261,6 @@ const rowHostedCheckoutPhone = document.getElementById('row-hosted-checkout-phon
 const inputHostedCheckoutPhone = document.getElementById('input-hosted-checkout-phone');
 const rowPlusHostedCheckoutOauthDelay = document.getElementById('row-plus-hosted-checkout-oauth-delay');
 const inputPlusHostedCheckoutOauthDelaySeconds = document.getElementById('input-plus-hosted-checkout-oauth-delay-seconds');
-const rowGpcCardKey = document.getElementById('row-gpc-card-key');
-const inputGpcCardKey = document.getElementById('input-gpc-card-key');
-const displayGpcCardKeyStatus = document.getElementById('display-gpc-card-key-status');
-const btnGpcCardKeyQuery = document.getElementById('btn-gpc-card-key-query');
-const rowAutoCdk = document.getElementById('row-auto-cdk');
-const inputAutoCdk = document.getElementById('input-auto-cdk');
 const selectMailProvider = document.getElementById('select-mail-provider');
 const btnMailLogin = document.getElementById('btn-mail-login');
 const rowCustomMailReceiveMode = document.getElementById('row-custom-mail-receive-mode');
@@ -258,6 +274,8 @@ const rowMail2925PoolSettings = document.getElementById('row-mail2925-pool-setti
 const mail2925ModeButtons = Array.from(document.querySelectorAll('[data-mail2925-mode]'));
 const rowEmailGenerator = document.getElementById('row-email-generator');
 const selectEmailGenerator = document.getElementById('select-email-generator');
+const rowDuckDdgToken = document.getElementById('row-duck-ddg-token');
+const inputDuckDdgToken = document.getElementById('input-duck-ddg-token');
 const rowCustomEmailPool = document.getElementById('row-custom-email-pool');
 const inputCustomEmailPool = document.getElementById('input-custom-email-pool');
 const btnCustomEmailPoolRefresh = document.getElementById('btn-custom-email-pool-refresh');
@@ -596,11 +614,8 @@ const stepsList = document.querySelector('.steps-list');
 const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal';
 const PLUS_PAYMENT_METHOD_PAYPAL_HOSTED = 'paypal-hosted';
 const PLUS_PAYMENT_METHOD_NONE = 'none';
-const PLUS_PAYMENT_METHOD_GPC_HELPER = 'gpc-helper';
-const PLUS_PAYMENT_METHOD_AUTO = 'plus-auto';
-const DEFAULT_GPC_BASE_URL = 'https://gpc.qlhazycoder.top';
 const DEFAULT_PLUS_HOSTED_CHECKOUT_OAUTH_DELAY_SECONDS = 3;
-const DEFAULT_PLUS_PAYMENT_METHOD = PLUS_PAYMENT_METHOD_AUTO;
+const DEFAULT_PLUS_PAYMENT_METHOD = PLUS_PAYMENT_METHOD_PAYPAL;
 const PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH = 'oauth';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_SUB2API_CODEX_SESSION = 'sub2api_codex_session';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_CPA_CODEX_SESSION = 'cpa_codex_session';
@@ -613,6 +628,8 @@ const DEFAULT_ACTIVE_FLOW_ID = 'openai';
 const DEFAULT_PHONE_SIGNUP_RELOGIN_AFTER_BIND_EMAIL_ENABLED = false;
 const PHONE_SIGNUP_REUSE_LOCK_TITLE = '手机号注册流程不使用号码复用，切回邮箱注册后会恢复原设置';
 let latestState = null;
+let currentUiLanguage = 'auto';
+let currentUiLocale = 'zh-CN';
 let currentPlusModeEnabled = false;
 let currentPlusPaymentMethod = DEFAULT_PLUS_PAYMENT_METHOD;
 let currentPlusAccountAccessStrategy = DEFAULT_PLUS_ACCOUNT_ACCESS_STRATEGY;
@@ -622,6 +639,7 @@ let currentPhoneSignupReloginAfterBindEmailEnabled = DEFAULT_PHONE_SIGNUP_RELOGI
 let currentStepDefinitionFlowId = DEFAULT_ACTIVE_FLOW_ID;
 let currentStepDefinitionTargetId = '';
 let currentStepDefinitionOpenAiWebchatUploadEnabled = false;
+let currentStepDefinitionGrokSub2apiGrok2ApiUploadEnabled = false;
 let phoneSignupReuseUiWasLocked = false;
 let kiroRsConnectionTestStatusText = '未测试';
 let lastPhoneSmsProviderBeforeChange = null;
@@ -1139,6 +1157,15 @@ function getStepDefinitionsForMode(plusModeEnabled = false, options = {}) {
   const openaiWebchatUploadEnabled = typeof options === 'string'
     ? Boolean(typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false)
     : Boolean(options.openaiWebchatUploadEnabled ?? (typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false));
+  const grokSub2apiGrok2ApiUploadEnabled = typeof options === 'string'
+    ? Boolean(typeof latestState !== 'undefined' ? (
+      latestState?.grokSub2apiGrok2ApiUploadEnabled
+      ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+    ) : false)
+    : Boolean(options.grokSub2apiGrok2ApiUploadEnabled ?? (typeof latestState !== 'undefined' ? (
+      latestState?.grokSub2apiGrok2ApiUploadEnabled
+      ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+    ) : false));
   const settingsState = typeof options === 'string'
     ? (typeof latestState !== 'undefined' ? latestState?.settingsState : undefined)
     : (options.settingsState || (typeof latestState !== 'undefined' ? latestState?.settingsState : undefined));
@@ -1149,6 +1176,7 @@ function getStepDefinitionsForMode(plusModeEnabled = false, options = {}) {
     plusPaymentMethod: normalizePlusPaymentMethod(rawPaymentMethod),
     plusAccountAccessStrategy: normalizePlusAccountAccessStrategy(rawPlusAccountAccessStrategy),
     openaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled,
     settingsState,
     signupMethod: normalizeSignupMethod(rawSignupMethod),
     phoneVerificationEnabled,
@@ -1198,6 +1226,15 @@ function getWorkflowNodesForMode(plusModeEnabled = false, options = {}) {
   const openaiWebchatUploadEnabled = typeof options === 'string'
     ? Boolean(typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false)
     : Boolean(options.openaiWebchatUploadEnabled ?? (typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false));
+  const grokSub2apiGrok2ApiUploadEnabled = typeof options === 'string'
+    ? Boolean(typeof latestState !== 'undefined' ? (
+      latestState?.grokSub2apiGrok2ApiUploadEnabled
+      ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+    ) : false)
+    : Boolean(options.grokSub2apiGrok2ApiUploadEnabled ?? (typeof latestState !== 'undefined' ? (
+      latestState?.grokSub2apiGrok2ApiUploadEnabled
+      ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+    ) : false));
   const settingsState = typeof options === 'string'
     ? (typeof latestState !== 'undefined' ? latestState?.settingsState : undefined)
     : (options.settingsState || (typeof latestState !== 'undefined' ? latestState?.settingsState : undefined));
@@ -1208,6 +1245,7 @@ function getWorkflowNodesForMode(plusModeEnabled = false, options = {}) {
     plusPaymentMethod: normalizePlusPaymentMethod(rawPaymentMethod),
     plusAccountAccessStrategy: normalizePlusAccountAccessStrategy(rawPlusAccountAccessStrategy),
     openaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled,
     settingsState,
     signupMethod: normalizeSignupMethod(rawSignupMethod),
     phoneVerificationEnabled,
@@ -1296,6 +1334,13 @@ function rebuildStepDefinitionState(plusModeEnabled = false, options = {}) {
     options.openaiWebchatUploadEnabled
     ?? (typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false)
   );
+  const grokSub2apiGrok2ApiUploadEnabled = Boolean(
+    options.grokSub2apiGrok2ApiUploadEnabled
+    ?? (typeof latestState !== 'undefined' ? (
+      latestState?.grokSub2apiGrok2ApiUploadEnabled
+      ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+    ) : false)
+  );
   const settingsState = options.settingsState || (typeof latestState !== 'undefined' ? latestState?.settingsState : undefined);
   currentPlusPaymentMethod = normalizePlusPaymentMethod(rawPaymentMethod);
   currentPlusAccountAccessStrategy = normalizePlusAccountAccessStrategy(rawPlusAccountAccessStrategy);
@@ -1316,12 +1361,16 @@ function rebuildStepDefinitionState(plusModeEnabled = false, options = {}) {
   if (typeof currentStepDefinitionOpenAiWebchatUploadEnabled !== 'undefined') {
     currentStepDefinitionOpenAiWebchatUploadEnabled = Boolean(openaiWebchatUploadEnabled);
   }
+  if (typeof currentStepDefinitionGrokSub2apiGrok2ApiUploadEnabled !== 'undefined') {
+    currentStepDefinitionGrokSub2apiGrok2ApiUploadEnabled = Boolean(grokSub2apiGrok2ApiUploadEnabled);
+  }
   stepDefinitions = getStepDefinitionsForMode(currentPlusModeEnabled, {
     activeFlowId: nextActiveFlowId,
     targetId,
     plusPaymentMethod: currentPlusPaymentMethod,
     plusAccountAccessStrategy: currentPlusAccountAccessStrategy,
     openaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled,
     settingsState,
     signupMethod: currentSignupMethod,
     phoneVerificationEnabled,
@@ -1335,6 +1384,7 @@ function rebuildStepDefinitionState(plusModeEnabled = false, options = {}) {
       plusPaymentMethod: currentPlusPaymentMethod,
       plusAccountAccessStrategy: currentPlusAccountAccessStrategy,
       openaiWebchatUploadEnabled,
+      grokSub2apiGrok2ApiUploadEnabled,
       settingsState,
       signupMethod: currentSignupMethod,
       phoneVerificationEnabled,
@@ -1746,6 +1796,7 @@ async function sendSidepanelMessage(message = {}) {
 window.sendSidepanelMessage = sendSidepanelMessage;
 
 const DEFAULT_SUB2API_GROUP_OPTIONS = ['codex', 'openai-plus'];
+const DEFAULT_GROK_SUB2API_GROUP_OPTIONS = [];
 const editableListPickerModule = window.SidepanelEditableListPicker || {};
 const normalizeEditableListValues = editableListPickerModule.normalizeEditableListValues
   || ((...sources) => {
@@ -1804,6 +1855,18 @@ function getSub2ApiGroupOptionsState(state = latestState) {
   return options.length ? options : [...DEFAULT_SUB2API_GROUP_OPTIONS];
 }
 
+function getSelectedGrokSub2ApiGroupName() {
+  return String(inputGrokSub2ApiGroup?.value || '').trim();
+}
+
+function getGrokSub2ApiGroupOptionsState(state = latestState) {
+  const options = normalizeSub2ApiGroupOptions(
+    state?.grokSub2apiGroupNames,
+    state?.grokSub2apiGroupName
+  );
+  return options;
+}
+
 const sub2ApiGroupPicker = createEditableListPicker({
   root: sub2ApiGroupPickerRoot,
   input: inputSub2ApiGroup,
@@ -1815,6 +1878,20 @@ const sub2ApiGroupPicker = createEditableListPicker({
   itemLabel: '分组',
   onDelete: handleDeleteSub2ApiGroup,
   onDeleteError: (error) => showToast(error?.message || '删除 SUB2API 分组失败。', 'error'),
+});
+
+const grokSub2ApiGroupPicker = createEditableListPicker({
+  root: grokSub2ApiGroupPickerRoot,
+  input: inputGrokSub2ApiGroup,
+  trigger: btnGrokSub2ApiGroupMenu,
+  current: grokSub2ApiGroupCurrent,
+  menu: grokSub2ApiGroupMenu,
+  emptyLabel: '请先添加分组',
+  fallbackItems: DEFAULT_GROK_SUB2API_GROUP_OPTIONS,
+  minItems: 0,
+  itemLabel: '分组',
+  onDelete: handleDeleteGrokSub2ApiGroup,
+  onDeleteError: (error) => showToast(error?.message || '删除 Grok SUB2API 分组失败。', 'error'),
 });
 
 const cfDomainPicker = createEditableListPicker({
@@ -1861,6 +1938,26 @@ function renderSub2ApiGroupOptions(state = latestState, selectedValue = '') {
 
   sub2ApiGroupPicker.render(options, selected || options[0] || DEFAULT_SUB2API_GROUP_OPTIONS[0]);
 }
+
+function renderGrokSub2ApiGroupOptions(state = latestState, selectedValue = '') {
+  if (!inputGrokSub2ApiGroup) {
+    return;
+  }
+
+  const selected = String(selectedValue || state?.grokSub2apiGroupName || '').trim();
+  const options = getGrokSub2ApiGroupOptionsState({
+    ...(state || {}),
+    grokSub2apiGroupName: selected || state?.grokSub2apiGroupName,
+  });
+  if (selected && !options.some((name) => name.toLowerCase() === selected.toLowerCase())) {
+    options.unshift(selected);
+  }
+
+  grokSub2ApiGroupPicker.render(
+    options,
+    selected || options[0] || ''
+  );
+}
 let customEmailPoolEntriesState = [];
 
 const EYE_OPEN_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -1870,12 +1967,15 @@ const TARGET_REPOSITORY_URLS = Object.freeze({
     cpa: 'https://github.com/router-for-me/CLIProxyAPI',
     sub2api: 'https://github.com/Wei-Shaw/sub2api',
     webchat: 'https://github.com/zqbxdev/webchat2api',
+    chatgpt2api: 'https://github.com/basketikun/chatgpt2api',
   }),
   kiro: Object.freeze({
     'kiro-rs': 'https://github.com/QLHazyCoder/kiro.rs',
   }),
   grok: Object.freeze({
     webchat2api: 'https://github.com/zqbxdev/webchat2api',
+    grok2api: 'https://github.com/jiujiu532/grok2api',
+    sub2api: 'https://github.com/Wei-Shaw/sub2api',
   }),
 });
 const PRIVACY_MASKED_INPUT_IDS = Object.freeze([
@@ -1883,11 +1983,14 @@ const PRIVACY_MASKED_INPUT_IDS = Object.freeze([
   'input-sub2api-url',
   'input-sub2api-email',
   'input-sub2api-default-proxy',
+  'input-grok-sub2api-default-proxy',
   'input-codex2api-url',
   'input-openai-webchat-url',
+  'input-openai-chatgpt2api-url',
   'input-kiro-rs-url',
   'input-grok-webchat2api-url',
   'input-mimo-mimo2api-url',
+  'input-grok2api-url',
   'input-email-prefix',
   'input-inbucket-host',
   'input-inbucket-mailbox',
@@ -2098,6 +2201,7 @@ function showToast(message, type = 'error', duration = 4000) {
 
   toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
   toastContainer.appendChild(toast);
+  applySidepanelI18nToNode(toast);
 
   if (duration > 0) {
     setTimeout(() => dismissToast(toast), duration);
@@ -2795,17 +2899,24 @@ function getGrokRegisterStatusLabel(value = '') {
   }
 }
 
-function getGrokWebchat2ApiUploadStatusLabel(value = '') {
+function getGrokUploadStatusLabel(value = '', targetId = '') {
   const normalized = String(value || '').trim().toLowerCase();
+  const isSub2Api = String(targetId || '').trim().toLowerCase() === 'sub2api';
   switch (normalized) {
     case 'reading_session':
       return '正在读取会话';
+    case 'waiting_authorization':
+      return '等待授权';
+    case 'authorizing':
+      return '正在授权';
+    case 'creating':
+      return '正在创建';
     case 'uploading':
-      return '正在上传';
+      return isSub2Api ? '正在创建' : '正在上传';
     case 'uploaded':
-      return '已上传';
+      return isSub2Api ? '已创建' : '已上传';
     case 'error':
-      return '上传失败';
+      return isSub2Api ? '创建失败' : '上传失败';
     default:
       return String(value || '').trim() || '未开始';
   }
@@ -2882,6 +2993,57 @@ function isOpenAiWebchatConfigComplete(state = latestState) {
   );
 }
 
+function getOpenAiChatgpt2ApiUrlFromState(state = latestState) {
+  return String(
+    state?.openaiChatgpt2ApiUrl
+    || state?.settingsState?.flows?.openai?.targets?.chatgpt2api?.baseUrl
+    || ''
+  ).trim();
+}
+
+function getOpenAiChatgpt2ApiAdminKeyFromState(state = latestState) {
+  return String(
+    state?.openaiChatgpt2ApiAdminKey
+    || state?.settingsState?.flows?.openai?.targets?.chatgpt2api?.apiKey
+    || ''
+  );
+}
+
+function buildOpenAiChatgpt2ApiConfigPatch(urlValue = '', adminKeyValue = '') {
+  return {
+    openaiChatgpt2ApiUrl: String(urlValue || '').trim(),
+    openaiChatgpt2ApiAdminKey: String(adminKeyValue || ''),
+  };
+}
+
+function syncOpenAiChatgpt2ApiInputsFromState(state = latestState) {
+  if (typeof inputOpenAiChatgpt2ApiUrl !== 'undefined' && inputOpenAiChatgpt2ApiUrl) {
+    inputOpenAiChatgpt2ApiUrl.value = getOpenAiChatgpt2ApiUrlFromState(state);
+  }
+  if (typeof inputOpenAiChatgpt2ApiKey !== 'undefined' && inputOpenAiChatgpt2ApiKey) {
+    inputOpenAiChatgpt2ApiKey.value = getOpenAiChatgpt2ApiAdminKeyFromState(state);
+  }
+}
+
+function renderOpenAiChatgpt2ApiState(state = latestState) {
+  if (!displayOpenAiChatgpt2ApiUploadStatus) {
+    return;
+  }
+  const uploadStatus = String(state?.openaiChatgpt2ApiUploadStatus || '').trim();
+  const uploadMessage = String(state?.openaiChatgpt2ApiUploadMessage || '').trim();
+  const uploadTargetUrl = String(state?.openaiChatgpt2ApiTargetUrl || '').trim();
+  const uploadedAt = Number(state?.openaiChatgpt2ApiUploadedAt) || 0;
+  const statusLabel = getOpenAiWebchatUploadStatusLabel(uploadStatus);
+  displayOpenAiChatgpt2ApiUploadStatus.textContent = `${statusLabel}${uploadMessage ? `：${uploadMessage}` : ''}${uploadedAt ? `，${new Date(uploadedAt).toLocaleString()}` : ''}`;
+  displayOpenAiChatgpt2ApiUploadStatus.title = uploadTargetUrl || '';
+  const tone = uploadStatus === 'uploaded' ? 'ok' : (uploadStatus === 'uploading' ? 'running' : (uploadStatus === 'error' ? 'error' : ''));
+  if (tone) {
+    displayOpenAiChatgpt2ApiUploadStatus.dataset.tone = tone;
+  } else {
+    delete displayOpenAiChatgpt2ApiUploadStatus.dataset.tone;
+  }
+}
+
 function renderOpenAiWebchatState(state = latestState) {
   const activeFlowId = typeof normalizeFlowId === 'function'
     ? normalizeFlowId(state?.activeFlowId || state?.flowId || DEFAULT_ACTIVE_FLOW_ID, DEFAULT_ACTIVE_FLOW_ID)
@@ -2945,6 +3107,7 @@ function renderGrokRuntimeState(state = latestState) {
     || 0
   ) || 0;
   const uploadState = runtimeState?.upload || {};
+  const uploadTargetId = String(uploadState.targetId || 'webchat2api').trim().toLowerCase();
   const uploadStatus = String(
     uploadState.status
     || state?.grokWebchat2ApiUploadStatus
@@ -2980,11 +3143,11 @@ function renderGrokRuntimeState(state = latestState) {
       : '未提取';
     displayGrokSsoCookie.title = currentCookie ? '已隐藏完整 SSO Cookie，可使用复制' : '';
   }
-  if (displayGrokWebchat2ApiUploadStatus) {
-    const label = getGrokWebchat2ApiUploadStatusLabel(uploadStatus);
+  if (displayGrokUploadStatus) {
+    const label = getGrokUploadStatusLabel(uploadStatus, uploadTargetId);
     const suffix = uploadedAt ? `，${new Date(uploadedAt).toLocaleString()}` : '';
-    displayGrokWebchat2ApiUploadStatus.textContent = `${label}${uploadMessage ? `：${uploadMessage}` : ''}${suffix}`;
-    displayGrokWebchat2ApiUploadStatus.title = uploadTargetUrl || '';
+    displayGrokUploadStatus.textContent = `${label}${uploadMessage ? `：${uploadMessage}` : ''}${suffix}`;
+    displayGrokUploadStatus.title = uploadTargetUrl || '';
   }
   [btnCopyGrokSso, btnClearGrokSso].forEach((button) => {
     if (button) {
@@ -3277,10 +3440,51 @@ function shouldOfferAutoModeChoice(state = latestState) {
   return hasSavedProgress(state) && getFirstUnfinishedStep(state) !== null;
 }
 
+function normalizeUiLanguage(value = 'auto') {
+  return window.FlowPilotI18n?.normalizeLanguageSetting
+    ? window.FlowPilotI18n.normalizeLanguageSetting(value)
+    : (['auto', 'zh-CN', 'en-US'].includes(String(value || '').trim()) ? String(value || '').trim() : 'auto');
+}
+
+function resolveUiLocale(language = currentUiLanguage) {
+  return window.FlowPilotI18n?.resolveLocale
+    ? window.FlowPilotI18n.resolveLocale(language, window)
+    : (normalizeUiLanguage(language) === 'en-US' ? 'en-US' : 'zh-CN');
+}
+
+function applySidepanelI18nToNode(node) {
+  if (window.FlowPilotSidepanelI18n?.apply) {
+    window.FlowPilotSidepanelI18n.apply(node, { locale: currentUiLocale });
+  }
+  if (window.FlowPilotI18n?.applyDomI18n) {
+    window.FlowPilotI18n.applyDomI18n(node, { locale: currentUiLocale, root: window });
+  }
+}
+
+function applySidepanelI18n() {
+  currentUiLocale = resolveUiLocale(currentUiLanguage);
+  if (selectUiLanguage) {
+    selectUiLanguage.value = currentUiLanguage;
+  }
+  if (window.FlowPilotSidepanelI18n?.setLocale) {
+    window.FlowPilotSidepanelI18n.setLocale(currentUiLocale, document);
+  }
+  if (window.FlowPilotI18n?.applyDomI18n) {
+    window.FlowPilotI18n.applyDomI18n(document, { locale: currentUiLocale, root: window });
+  }
+  document.documentElement.lang = currentUiLocale;
+  window.FlowPilotSidepanelI18n?.start?.(document);
+}
+
 function syncLatestState(nextState) {
   const normalizedNextState = {
     ...(nextState || {}),
   };
+  if (Object.prototype.hasOwnProperty.call(normalizedNextState, 'uiLanguage')) {
+    normalizedNextState.uiLanguage = normalizeUiLanguage(normalizedNextState.uiLanguage);
+    currentUiLanguage = normalizedNextState.uiLanguage;
+    currentUiLocale = resolveUiLocale(currentUiLanguage);
+  }
   if (
     Object.prototype.hasOwnProperty.call(normalizedNextState, 'activeFlowId')
     || Object.prototype.hasOwnProperty.call(normalizedNextState, 'flowId')
@@ -3400,28 +3604,15 @@ async function persistOperationDelayToggle() {
 }
 
 function normalizePlusPaymentMethod(value = '') {
-  const rootScope = typeof window !== 'undefined' ? window : globalThis;
-  if (rootScope.GpcUtils?.normalizePlusPaymentMethod) {
-    return rootScope.GpcUtils.normalizePlusPaymentMethod(value);
-  }
-
-  const gpcValue = typeof PLUS_PAYMENT_METHOD_GPC_HELPER !== 'undefined' ? PLUS_PAYMENT_METHOD_GPC_HELPER : 'gpc-helper';
-  const autoValue = typeof PLUS_PAYMENT_METHOD_AUTO !== 'undefined' ? PLUS_PAYMENT_METHOD_AUTO : 'plus-auto';
   const paypalValue = typeof PLUS_PAYMENT_METHOD_PAYPAL !== 'undefined' ? PLUS_PAYMENT_METHOD_PAYPAL : 'paypal';
   const paypalHostedValue = typeof PLUS_PAYMENT_METHOD_PAYPAL_HOSTED !== 'undefined' ? PLUS_PAYMENT_METHOD_PAYPAL_HOSTED : 'paypal-hosted';
   const noneValue = typeof PLUS_PAYMENT_METHOD_NONE !== 'undefined' ? PLUS_PAYMENT_METHOD_NONE : 'none';
   const normalized = String(value || '').trim().toLowerCase();
-  if (normalized === noneValue || normalized === 'no-payment' || normalized === 'skip-payment') {
+  if (normalized === noneValue) {
     return noneValue;
   }
-  if (normalized === paypalHostedValue || normalized === 'paypal_direct' || normalized === 'paypal-direct') {
+  if (normalized === paypalHostedValue) {
     return paypalHostedValue;
-  }
-  if (normalized === gpcValue) {
-    return gpcValue;
-  }
-  if (normalized === autoValue || normalized === 'pix' || normalized === 'pix_plus' || normalized === 'pixplus') {
-    return autoValue;
   }
   return paypalValue;
 }
@@ -4307,9 +4498,7 @@ function applyYydsMailSettingsState(state = {}) {
 }
 
 function collectSettingsPayload() {
-  const defaultGpcBaseUrl = typeof DEFAULT_GPC_BASE_URL !== 'undefined'
-    ? DEFAULT_GPC_BASE_URL
-    : 'https://gpc.qlhazycoder.top';
+  const safeUiLanguage = typeof currentUiLanguage !== 'undefined' ? currentUiLanguage : 'auto';
   const normalizeYydsBaseUrlValue = typeof normalizeYydsMailBaseUrl === 'function'
     ? normalizeYydsMailBaseUrl
     : ((value) => String(value || '').trim() || 'https://maliapi.215.im/v1');
@@ -4913,7 +5102,7 @@ function collectSettingsPayload() {
     ? normalizePanelMode
     : ((value = '') => {
       const normalized = String(value || '').trim().toLowerCase();
-      return ['cpa', 'sub2api', 'codex2api', 'webchat'].includes(normalized) ? normalized : 'cpa';
+      return ['cpa', 'sub2api', 'codex2api', 'webchat', 'chatgpt2api'].includes(normalized) ? normalized : 'cpa';
     });
   const normalizeTargetIdForFlowSafe = typeof normalizeTargetIdForFlow === 'function'
     ? normalizeTargetIdForFlow
@@ -5024,9 +5213,6 @@ function collectSettingsPayload() {
       ? effectiveTargetId
       : openAiTargetId
   );
-  const effectivePlusModeEnabled = capabilityState
-    ? Boolean(capabilityState.runtimeLocks?.plusModeEnabled)
-    : rawPlusModeEnabled;
   const effectivePhoneVerificationEnabled = capabilityState
     ? Boolean(capabilityState.runtimeLocks?.phoneVerificationEnabled)
     : rawPhoneVerificationEnabled;
@@ -5061,6 +5247,27 @@ function collectSettingsPayload() {
   if (sub2apiGroupNames.length === 0) {
     appendSub2ApiGroupNames(['codex', 'openai-plus']);
   }
+  const selectedGrokSub2ApiGroupName = String(
+    typeof inputGrokSub2ApiGroup !== 'undefined' && inputGrokSub2ApiGroup
+      ? inputGrokSub2ApiGroup.value
+      : latestState?.grokSub2apiGroupName
+  ).trim();
+  const normalizeGrokSub2ApiGroupOptions = typeof normalizeSub2ApiGroupOptions === 'function'
+    ? normalizeSub2ApiGroupOptions
+    : ((...sources) => Array.from(new Set(
+      sources
+        .flatMap((value) => (Array.isArray(value) ? value : String(value || '').split(/[\r\n,，、]+/)))
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+    )));
+  const grokSub2apiGroupNames = normalizeGrokSub2ApiGroupOptions(
+    latestState?.grokSub2apiGroupNames,
+    latestState?.grokSub2apiGroupName,
+    selectedGrokSub2ApiGroupName
+  );
+  const grokSub2apiDefaultProxyName = typeof inputGrokSub2ApiDefaultProxy !== 'undefined' && inputGrokSub2ApiDefaultProxy
+    ? inputGrokSub2ApiDefaultProxy.value.trim()
+    : String(latestState?.grokSub2apiDefaultProxyName || '').trim();
   const sub2apiAccountPriorityNormalizer = typeof normalizeSub2ApiAccountPriorityValue === 'function'
     ? normalizeSub2ApiAccountPriorityValue
     : ((value) => {
@@ -5093,12 +5300,52 @@ function collectSettingsPayload() {
   const currentOpenAiWebchatKeyValue = typeof inputOpenAiWebchatKey !== 'undefined' && inputOpenAiWebchatKey
     ? String(inputOpenAiWebchatKey.value ?? '').trim()
     : '';
+  const readOpenAiChatgpt2ApiUrlFromState = typeof getOpenAiChatgpt2ApiUrlFromState === 'function'
+    ? getOpenAiChatgpt2ApiUrlFromState
+    : ((state = {}) => String(
+      state?.openaiChatgpt2ApiUrl
+      || state?.settingsState?.flows?.openai?.targets?.chatgpt2api?.baseUrl
+      || ''
+    ).trim());
+  const readOpenAiChatgpt2ApiAdminKeyFromState = typeof getOpenAiChatgpt2ApiAdminKeyFromState === 'function'
+    ? getOpenAiChatgpt2ApiAdminKeyFromState
+    : ((state = {}) => String(
+      state?.openaiChatgpt2ApiAdminKey
+      || state?.settingsState?.flows?.openai?.targets?.chatgpt2api?.apiKey
+      || ''
+    ));
+  const createOpenAiChatgpt2ApiConfigPatch = typeof buildOpenAiChatgpt2ApiConfigPatch === 'function'
+    ? buildOpenAiChatgpt2ApiConfigPatch
+    : ((urlValue = '', adminKeyValue = '') => ({
+      openaiChatgpt2ApiUrl: String(urlValue || '').trim(),
+      openaiChatgpt2ApiAdminKey: String(adminKeyValue || ''),
+    }));
+  const currentOpenAiChatgpt2ApiUrlValue = typeof inputOpenAiChatgpt2ApiUrl !== 'undefined' && inputOpenAiChatgpt2ApiUrl
+    ? String(inputOpenAiChatgpt2ApiUrl.value ?? '').trim()
+    : readOpenAiChatgpt2ApiUrlFromState(latestState);
+  const currentOpenAiChatgpt2ApiKeyValue = typeof inputOpenAiChatgpt2ApiKey !== 'undefined' && inputOpenAiChatgpt2ApiKey
+    ? String(inputOpenAiChatgpt2ApiKey.value ?? '')
+    : readOpenAiChatgpt2ApiAdminKeyFromState(latestState);
   const currentGrokWebchat2ApiUrlValue = typeof inputGrokWebchat2ApiUrl !== 'undefined' && inputGrokWebchat2ApiUrl
     ? String(inputGrokWebchat2ApiUrl.value ?? '').trim()
     : '';
   const currentGrokWebchat2ApiKeyValue = typeof inputGrokWebchat2ApiKey !== 'undefined' && inputGrokWebchat2ApiKey
     ? String(inputGrokWebchat2ApiKey.value ?? '').trim()
     : '';
+  const currentGrok2ApiUrlValue = typeof inputGrok2ApiUrl !== 'undefined' && inputGrok2ApiUrl
+    ? String(inputGrok2ApiUrl.value ?? '').trim()
+    : String(
+      latestState?.grok2ApiUrl
+      || latestState?.settingsState?.flows?.grok?.targets?.grok2api?.baseUrl
+      || ''
+    ).trim();
+  const currentGrok2ApiKeyValue = typeof inputGrok2ApiKey !== 'undefined' && inputGrok2ApiKey
+    ? String(inputGrok2ApiKey.value ?? '').trim()
+    : String(
+      latestState?.grok2ApiAdminKey
+      || latestState?.settingsState?.flows?.grok?.targets?.grok2api?.apiKey
+      || ''
+    ).trim();
   const readSharedWebchatUrlFromState = typeof getSharedWebchatUrlFromState === 'function'
     ? getSharedWebchatUrlFromState
     : ((state = {}) => String(
@@ -5150,6 +5397,7 @@ function collectSettingsPayload() {
       return Math.min(120, Math.max(0, Math.floor(numeric)));
     });
   return {
+    uiLanguage: safeUiLanguage,
     activeFlowId,
     targetId: effectiveTargetId,
     kiroRsUrl: currentKiroRsUrlValue !== null
@@ -5165,7 +5413,10 @@ function collectSettingsPayload() {
       ? currentMimoMimo2ApiPasswordValue
       : String(latestState?.mimoMimo2ApiAdminPassword || ''),
     ...createSharedWebchatConfigPatch(sharedWebchatUrl, sharedWebchatAdminKey),
+    grok2ApiUrl: currentGrok2ApiUrlValue,
+    grok2ApiAdminKey: currentGrok2ApiKeyValue,
     openaiWebchatUploadEnabled: openAiWebchatUploadEnabled,
+    ...createOpenAiChatgpt2ApiConfigPatch(currentOpenAiChatgpt2ApiUrlValue, currentOpenAiChatgpt2ApiKeyValue),
     vpsUrl: inputVpsUrl.value.trim(),
     vpsPassword: inputVpsPassword.value,
     localCpaStep9Mode: getSelectedLocalCpaStep9Mode(),
@@ -5180,6 +5431,18 @@ function collectSettingsPayload() {
         : latestState?.sub2apiAccountPriority
     ),
     sub2apiDefaultProxyName: inputSub2ApiDefaultProxy.value.trim(),
+    grokSub2apiGroupName: selectedGrokSub2ApiGroupName,
+    grokSub2apiGroupNames,
+    grokSub2apiAccountPriority: sub2apiAccountPriorityNormalizer(
+      typeof inputGrokSub2ApiAccountPriority !== 'undefined' && inputGrokSub2ApiAccountPriority
+        ? inputGrokSub2ApiAccountPriority.value
+        : latestState?.grokSub2apiAccountPriority
+    ),
+    grokSub2apiDefaultProxyName,
+    grokSub2apiGrok2ApiUploadEnabled: Boolean(
+      typeof inputGrokSub2ApiGrok2ApiUploadEnabled !== 'undefined'
+      && inputGrokSub2ApiGrok2ApiUploadEnabled?.checked
+    ),
     ipProxyEnabled: getSelectedIpProxyEnabledSafe(),
     ipProxyService: selectedIpProxyService,
     ipProxyMode: currentIpProxyServiceProfile.mode,
@@ -5202,7 +5465,7 @@ function collectSettingsPayload() {
     ipProxyRegion: currentIpProxyServiceProfile.region,
     codex2apiUrl: inputCodex2ApiUrl.value.trim(),
     codex2apiAdminKey: inputCodex2ApiAdminKey.value.trim(),
-    plusModeEnabled: effectivePlusModeEnabled,
+    plusModeEnabled: false,
     plusPaymentMethod,
     plusAccountAccessStrategy: activeFlowId === defaultFlowId
       ? resolvePlusAccountAccessStrategyForTargetSafe(requestedPlusAccountAccessStrategy, effectiveOpenAiTargetId)
@@ -5222,15 +5485,6 @@ function collectSettingsPayload() {
     paypalPassword: String(currentPayPalAccount?.password || latestState?.paypalPassword || ''),
     currentPayPalAccountId: String(latestState?.currentPayPalAccountId || '').trim(),
     paypalAccounts: payPalAccounts,
-    gpcBaseUrl: window.GpcUtils?.normalizeGpcBaseUrl
-      ? window.GpcUtils.normalizeGpcBaseUrl(defaultGpcBaseUrl)
-      : String(defaultGpcBaseUrl).trim().replace(/\/+$/g, ''),
-    gpcCardKey: typeof inputGpcCardKey !== 'undefined' && inputGpcCardKey
-      ? normalizeGpcCardKeyInput(inputGpcCardKey.value || '')
-      : normalizeGpcCardKeyInput(latestState?.gpcCardKey || ''),
-    autoCdk: typeof inputAutoCdk !== 'undefined' && inputAutoCdk
-      ? String(inputAutoCdk.value || '').trim()
-      : String(latestState?.autoCdk || '').trim(),
     ...(accountContributionEnabled ? {} : {
       customPassword: inputPassword.value,
     }),
@@ -5247,6 +5501,9 @@ function collectSettingsPayload() {
       : 'http://127.0.0.1:17374',
     currentMail2925AccountId: String(latestState?.currentMail2925AccountId || '').trim(),
     emailGenerator: selectEmailGenerator.value,
+    duckDdgToken: typeof inputDuckDdgToken !== 'undefined' && inputDuckDdgToken
+      ? String(inputDuckDdgToken.value || '').trim()
+      : '',
     customMailProviderPool: typeof normalizeCustomEmailPoolEntries === 'function'
       ? normalizeCustomEmailPoolEntries(inputCustomMailProviderPool?.value)
       : [],
@@ -10006,7 +10263,7 @@ function setElementReuseLockedState(element, locked, title = PHONE_SIGNUP_REUSE_
 
 function normalizePanelMode(value = '') {
   const normalized = String(value || '').trim().toLowerCase();
-  if (['cpa', 'sub2api', 'codex2api', 'webchat'].includes(normalized)) {
+  if (['cpa', 'sub2api', 'codex2api', 'webchat', 'chatgpt2api'].includes(normalized)) {
     return normalized;
   }
   return 'cpa';
@@ -10324,6 +10581,12 @@ function resolveStepDefinitionCapabilityState(state = latestState, options = {})
     openaiWebchatUploadEnabled: capabilityState
       ? Boolean(capabilityState.stepDefinitionOptions?.openaiWebchatUploadEnabled)
       : false,
+    grokSub2apiGrok2ApiUploadEnabled: capabilityState
+      ? Boolean(capabilityState.stepDefinitionOptions?.grokSub2apiGrok2ApiUploadEnabled)
+      : Boolean(
+        nextState?.grokSub2apiGrok2ApiUploadEnabled
+        ?? nextState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+      ),
   };
 }
 
@@ -10796,8 +11059,6 @@ function updatePlusModeUI() {
   const paypalHostedValue = typeof PLUS_PAYMENT_METHOD_PAYPAL_HOSTED !== 'undefined' ? PLUS_PAYMENT_METHOD_PAYPAL_HOSTED : 'paypal-hosted';
   const noneValue = typeof PLUS_PAYMENT_METHOD_NONE !== 'undefined' ? PLUS_PAYMENT_METHOD_NONE : 'none';
 
-  const gpcValue = typeof PLUS_PAYMENT_METHOD_GPC_HELPER !== 'undefined' ? PLUS_PAYMENT_METHOD_GPC_HELPER : 'gpc-helper';
-  const autoValue = typeof PLUS_PAYMENT_METHOD_AUTO !== 'undefined' ? PLUS_PAYMENT_METHOD_AUTO : 'plus-auto';
   const oauthStrategyValue = typeof PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH !== 'undefined'
     ? PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH
     : 'oauth';
@@ -10913,10 +11174,12 @@ function updatePlusModeUI() {
     ? normalizePlusPaymentMethod(selectPlusPaymentMethod.value)
     : method;
   const hostedRowsVisible = enabled && selectedMethod === paypalHostedValue;
-  const gpcRowsVisible = enabled && selectedMethod === gpcValue;
-  const autoRowsVisible = enabled && selectedMethod === autoValue;
   if (typeof rowPlusMode !== 'undefined' && rowPlusMode) {
-    rowPlusMode.style.display = supportsPlusMode ? '' : 'none';
+    rowPlusMode.style.display = 'none';
+  }
+  if (typeof inputPlusModeEnabled !== 'undefined' && inputPlusModeEnabled) {
+    inputPlusModeEnabled.checked = false;
+    inputPlusModeEnabled.disabled = true;
   }
   if (typeof selectPlusPaymentMethod !== 'undefined' && selectPlusPaymentMethod) {
     selectPlusPaymentMethod.value = method;
@@ -10925,12 +11188,7 @@ function updatePlusModeUI() {
     }
   }
   if (typeof plusPaymentMethodCaption !== 'undefined' && plusPaymentMethodCaption) {
-    plusPaymentMethodCaption.textContent = method === gpcValue
-      ? 'GPC 网页充值链路'
-
-      : method === autoValue
-      ? ''
-      : method === noneValue
+    plusPaymentMethodCaption.textContent = method === noneValue
       ? '已有 Plus，无需配置支付链路'
       : method === paypalHostedValue
       ? 'PayPal 无卡直绑链路'
@@ -11039,19 +11297,6 @@ function updatePlusModeUI() {
     }
     row.style.display = hostedRowsVisible ? '' : 'none';
   });
-  if (typeof rowGpcCardKey !== 'undefined' && rowGpcCardKey) {
-    rowGpcCardKey.style.display = gpcRowsVisible ? '' : 'none';
-  }
-  if (typeof btnGpcCardKeyPurchase !== 'undefined' && btnGpcCardKeyPurchase) {
-    btnGpcCardKeyPurchase.style.display = gpcRowsVisible ? '' : 'none';
-  }
-  if (typeof rowAutoCdk !== 'undefined' && rowAutoCdk) {
-    rowAutoCdk.style.display = autoRowsVisible ? '' : 'none';
-  }
-  if (typeof btnAutoCdkPurchase !== 'undefined' && btnAutoCdkPurchase) {
-    btnAutoCdkPurchase.style.display = autoRowsVisible ? '' : 'none';
-  }
-
 }
 
 function setSettingsCardLocked(locked) {
@@ -11282,134 +11527,6 @@ async function persistSignupPhoneInputForAction() {
   await persistSignupPhoneInputValue({ final: true, silent: true });
 }
 
-function isGpcHelperCheckoutSelected() {
-  const gpcValue = typeof PLUS_PAYMENT_METHOD_GPC_HELPER !== 'undefined' ? PLUS_PAYMENT_METHOD_GPC_HELPER : 'gpc-helper';
-  const plusEnabled = typeof inputPlusModeEnabled !== 'undefined' && inputPlusModeEnabled
-    ? Boolean(inputPlusModeEnabled.checked)
-    : Boolean(latestState?.plusModeEnabled);
-  return plusEnabled && getSelectedPlusPaymentMethod() === gpcValue;
-}
-
-function normalizeGpcCardKeyInput(value = '') {
-  if (window.GpcUtils?.normalizeGpcCardKey) {
-    return window.GpcUtils.normalizeGpcCardKey(value);
-  }
-  return String(value || '').trim().toUpperCase();
-}
-
-function isGpcCardKeyInputFormat(value = '') {
-  if (window.GpcUtils?.isGpcCardKeyFormat) {
-    return window.GpcUtils.isGpcCardKeyFormat(value);
-  }
-  return /^GPC-[A-F0-9]{8}-[A-F0-9]{8}-[A-F0-9]{8}$/.test(normalizeGpcCardKeyInput(value));
-}
-
-function setGpcCardKeyStatus(message = '', tone = '') {
-  if (!displayGpcCardKeyStatus) {
-    return;
-  }
-  displayGpcCardKeyStatus.textContent = message || '等待输入';
-  displayGpcCardKeyStatus.dataset.tone = tone || '';
-}
-
-function formatGpcCardKeyBalanceStatus(result = {}) {
-  const remaining = result?.remainingUses;
-  if (remaining !== undefined && remaining !== null && String(remaining).trim() !== '') {
-    return `剩余 ${remaining} 次`;
-  }
-  return String(result?.balance || '').trim() || '卡密可用';
-}
-
-async function refreshGpcCardKeyStatus(options = {}) {
-  const rawCardKey = String(inputGpcCardKey?.value || '').trim();
-  const cardKey = normalizeGpcCardKeyInput(rawCardKey);
-  if (!rawCardKey) {
-    setGpcCardKeyStatus('等待输入', '');
-    return null;
-  }
-  if (inputGpcCardKey && inputGpcCardKey.value !== cardKey) {
-    inputGpcCardKey.value = cardKey;
-  }
-  if (!isGpcCardKeyInputFormat(cardKey)) {
-    setGpcCardKeyStatus('格式应为 GPC-XXXXXXXX-XXXXXXXX-XXXXXXXX', 'error');
-    return null;
-  }
-
-  const requestId = (refreshGpcCardKeyStatus.requestId || 0) + 1;
-  refreshGpcCardKeyStatus.requestId = requestId;
-  setGpcCardKeyStatus('正在检测...', 'running');
-  try {
-    const response = await sendSidepanelMessage({
-      type: 'REFRESH_GPC_CARD_BALANCE',
-      payload: {
-        gpcCardKey: cardKey,
-        reason: options.reason || 'input',
-      },
-    });
-    if (requestId !== refreshGpcCardKeyStatus.requestId) {
-      return response;
-    }
-    if (response?.error) {
-      throw new Error(response.error);
-    }
-    setGpcCardKeyStatus(formatGpcCardKeyBalanceStatus(response), 'ok');
-    syncLatestState({
-      gpcCardKey: cardKey,
-      gpcBalance: response?.balance || latestState?.gpcBalance || '',
-      gpcBalancePayload: response?.data || latestState?.gpcBalancePayload || null,
-      gpcBalanceUpdatedAt: response?.updatedAt || Date.now(),
-      gpcBalanceError: '',
-      gpcRemainingUses: Number(response?.remainingUses) || 0,
-      gpcCardStatus: String(response?.cardStatus || '').trim(),
-    });
-    return response;
-  } catch (error) {
-    if (requestId === refreshGpcCardKeyStatus.requestId) {
-      setGpcCardKeyStatus(error?.message || '卡密检测失败', 'error');
-    }
-    return null;
-  }
-}
-
-function scheduleGpcCardKeyStatusRefresh() {
-  clearTimeout(scheduleGpcCardKeyStatusRefresh.timer);
-  scheduleGpcCardKeyStatusRefresh.timer = setTimeout(() => {
-    refreshGpcCardKeyStatus({ reason: 'input' }).catch(() => { });
-  }, 1000);
-}
-
-async function showGpcStartBlockedDialog(message) {
-  await openConfirmModal({
-    title: 'GPC 页面流程无法开启',
-    message,
-    confirmLabel: '知道了',
-  });
-}
-
-async function ensureGpcCardKeyReadyForStart(options = {}) {
-  if (!isGpcHelperCheckoutSelected()) {
-    return true;
-  }
-  const cardKey = normalizeGpcCardKeyInput(inputGpcCardKey?.value || latestState?.gpcCardKey || '');
-  if (!cardKey) {
-    await showGpcStartBlockedDialog('请先填写 GPC 卡密。');
-    return false;
-  }
-  if (!isGpcCardKeyInputFormat(cardKey)) {
-    await showGpcStartBlockedDialog('GPC 卡密格式不正确，应类似 GPC-6C9F1A32-45734795-914E6F00。');
-    setGpcCardKeyStatus('格式应为 GPC-XXXXXXXX-XXXXXXXX-XXXXXXXX', 'error');
-    return false;
-  }
-  if (inputGpcCardKey) {
-    inputGpcCardKey.value = cardKey;
-  }
-
-  if (options?.notify) {
-    showToast('GPC 卡密已填写。', 'success', 1800);
-  }
-  return true;
-}
-
 async function clearRegistrationEmail(options = {}) {
   const { silent = false } = options;
   if (!inputEmail.value.trim() && !latestState?.email) {
@@ -11596,6 +11713,9 @@ function applyAutoRunStatus(payload = currentAutoRun) {
   if (typeof inputSub2ApiAccountPriority !== 'undefined' && inputSub2ApiAccountPriority) {
     inputSub2ApiAccountPriority.disabled = locked;
   }
+  if (typeof inputGrokSub2ApiAccountPriority !== 'undefined' && inputGrokSub2ApiAccountPriority) {
+    inputGrokSub2ApiAccountPriority.disabled = locked;
+  }
   inputAutoSkipFailures.disabled = locked;
 
   const lockedRunCount = typeof getLockedRunCountFromEmailPool === 'function'
@@ -11746,6 +11866,13 @@ function syncStepDefinitionsForMode(plusModeEnabled = false, plusPaymentMethodOr
     options.openaiWebchatUploadEnabled
       ?? (typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false)
   );
+  const nextGrokSub2apiGrok2ApiUploadEnabled = Boolean(
+    options.grokSub2apiGrok2ApiUploadEnabled
+      ?? (typeof latestState !== 'undefined' ? (
+        latestState?.grokSub2apiGrok2ApiUploadEnabled
+        ?? latestState?.settingsState?.flows?.grok?.targets?.sub2api?.grok2apiUploadEnabled
+      ) : false)
+  );
   const nextSettingsState = options.settingsState || (typeof latestState !== 'undefined' ? latestState?.settingsState : null);
   const nextPaymentMethod = normalizePlusPaymentMethod(rawPaymentMethod);
   const nextActiveFlowId = String(
@@ -11763,6 +11890,9 @@ function syncStepDefinitionsForMode(plusModeEnabled = false, plusPaymentMethodOr
   const currentOpenaiWebchatUploadEnabled = typeof currentStepDefinitionOpenAiWebchatUploadEnabled !== 'undefined'
     ? Boolean(currentStepDefinitionOpenAiWebchatUploadEnabled)
     : Boolean(typeof latestState !== 'undefined' ? latestState?.openaiWebchatUploadEnabled : false);
+  const currentGrokSub2apiGrok2ApiUploadEnabled = typeof currentStepDefinitionGrokSub2apiGrok2ApiUploadEnabled !== 'undefined'
+    ? Boolean(currentStepDefinitionGrokSub2apiGrok2ApiUploadEnabled)
+    : Boolean(typeof latestState !== 'undefined' ? latestState?.grokSub2apiGrok2ApiUploadEnabled : false);
   const rootScope = typeof window !== 'undefined' ? window : globalThis;
   const currentPaymentStep = stepDefinitions.find((step) => step.key === 'paypal-approve');
   const nextPaymentTitle = rootScope.MultiPageStepDefinitions?.getPlusPaymentStepTitle?.({
@@ -11772,6 +11902,7 @@ function syncStepDefinitionsForMode(plusModeEnabled = false, plusPaymentMethodOr
     plusPaymentMethod: nextPaymentMethod,
     plusAccountAccessStrategy: nextPlusAccountAccessStrategy,
     openaiWebchatUploadEnabled: nextOpenaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled: nextGrokSub2apiGrok2ApiUploadEnabled,
     settingsState: nextSettingsState,
     signupMethod: nextSignupMethod,
     phoneVerificationEnabled: nextPhoneVerificationEnabled,
@@ -11787,6 +11918,7 @@ function syncStepDefinitionsForMode(plusModeEnabled = false, plusPaymentMethodOr
     || nextPhoneSignupReloginAfterBindEmailEnabled !== currentPhoneSignupReloginAfterBindEmailEnabled
     || nextAccountContributionEnabled !== Boolean(typeof latestState !== 'undefined' ? latestState?.accountContributionEnabled : false)
     || nextOpenaiWebchatUploadEnabled !== currentOpenaiWebchatUploadEnabled
+    || nextGrokSub2apiGrok2ApiUploadEnabled !== currentGrokSub2apiGrok2ApiUploadEnabled
     || nextActiveFlowId !== currentFlowId
     || normalizedNextTargetId !== currentTargetId
     || paymentTitleChanged;
@@ -11800,6 +11932,7 @@ function syncStepDefinitionsForMode(plusModeEnabled = false, plusPaymentMethodOr
     plusPaymentMethod: nextPaymentMethod,
     plusAccountAccessStrategy: nextPlusAccountAccessStrategy,
     openaiWebchatUploadEnabled: nextOpenaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled: nextGrokSub2apiGrok2ApiUploadEnabled,
     settingsState: nextSettingsState,
     signupMethod: nextSignupMethod,
     phoneVerificationEnabled: nextPhoneVerificationEnabled,
@@ -11831,6 +11964,7 @@ function syncStepDefinitionsFromUiState(stateOverrides = {}) {
     plusPaymentMethod: getSelectedPlusPaymentMethod(nextState),
     plusAccountAccessStrategy: stepDefinitionState.plusAccountAccessStrategy,
     openaiWebchatUploadEnabled: stepDefinitionState.openaiWebchatUploadEnabled,
+    grokSub2apiGrok2ApiUploadEnabled: stepDefinitionState.grokSub2apiGrok2ApiUploadEnabled,
     settingsState: nextState?.settingsState,
     signupMethod: stepDefinitionState.signupMethod,
     phoneVerificationEnabled: Boolean(stepDefinitionState.phoneVerificationEnabled),
@@ -11861,6 +11995,7 @@ function applySettingsState(state) {
       signupMethod: stepDefinitionState.signupMethod,
       plusAccountAccessStrategy: stepDefinitionState.plusAccountAccessStrategy,
       openaiWebchatUploadEnabled: stepDefinitionState.openaiWebchatUploadEnabled,
+      grokSub2apiGrok2ApiUploadEnabled: stepDefinitionState.grokSub2apiGrok2ApiUploadEnabled,
       settingsState: state?.settingsState,
       phoneVerificationEnabled: Boolean(stepDefinitionState.phoneVerificationEnabled),
       phoneSignupReloginAfterBindEmailEnabled: Boolean(state?.phoneSignupReloginAfterBindEmailEnabled),
@@ -11936,7 +12071,8 @@ function applySettingsState(state) {
   }
   syncPasswordField(state || {});
   if (typeof inputPlusModeEnabled !== 'undefined' && inputPlusModeEnabled) {
-    inputPlusModeEnabled.checked = Boolean(state?.plusModeEnabled);
+    inputPlusModeEnabled.checked = false;
+    inputPlusModeEnabled.disabled = true;
   }
   if (typeof selectPlusPaymentMethod !== 'undefined' && selectPlusPaymentMethod) {
     selectPlusPaymentMethod.value = normalizePlusPaymentMethod(state?.plusPaymentMethod || DEFAULT_PLUS_PAYMENT_METHOD);
@@ -11947,23 +12083,6 @@ function applySettingsState(state) {
   if (typeof selectPlusAccountAccessStrategy !== 'undefined' && selectPlusAccountAccessStrategy) {
     selectPlusAccountAccessStrategy.dataset.requestedValue = currentPlusAccountAccessStrategy;
     selectPlusAccountAccessStrategy.value = normalizePlusAccountAccessStrategyUiValue(currentPlusAccountAccessStrategy);
-  }
-  if (typeof inputGpcCardKey !== 'undefined' && inputGpcCardKey) {
-    inputGpcCardKey.value = state?.gpcCardKey || '';
-    if (state?.gpcBalanceError) {
-      setGpcCardKeyStatus(state.gpcBalanceError, 'error');
-    } else if (state?.gpcBalance || state?.gpcRemainingUses !== undefined) {
-      setGpcCardKeyStatus(formatGpcCardKeyBalanceStatus({
-        balance: state?.gpcBalance,
-        remainingUses: state?.gpcRemainingUses,
-        cardStatus: state?.gpcCardStatus,
-      }), 'ok');
-    } else {
-      setGpcCardKeyStatus(inputGpcCardKey.value ? '等待检测' : '等待输入', '');
-    }
-  }
-  if (typeof inputAutoCdk !== 'undefined' && inputAutoCdk) {
-    inputAutoCdk.value = state?.autoCdk || '';
   }
   if (typeof inputHostedCheckoutVerificationUrl !== 'undefined' && inputHostedCheckoutVerificationUrl) {
     inputHostedCheckoutVerificationUrl.value = String(state?.hostedCheckoutVerificationUrl || '').trim();
@@ -11987,6 +12106,18 @@ function applySettingsState(state) {
     inputSub2ApiAccountPriority.value = String(normalizeSub2ApiAccountPriorityValue(state?.sub2apiAccountPriority));
   }
   inputSub2ApiDefaultProxy.value = state?.sub2apiDefaultProxyName || '';
+  if (typeof renderGrokSub2ApiGroupOptions === 'function') {
+    renderGrokSub2ApiGroupOptions(state, state?.grokSub2apiGroupName || '');
+  }
+  if (typeof inputGrokSub2ApiAccountPriority !== 'undefined' && inputGrokSub2ApiAccountPriority) {
+    inputGrokSub2ApiAccountPriority.value = String(normalizeSub2ApiAccountPriorityValue(state?.grokSub2apiAccountPriority));
+  }
+  if (typeof inputGrokSub2ApiDefaultProxy !== 'undefined' && inputGrokSub2ApiDefaultProxy) {
+    inputGrokSub2ApiDefaultProxy.value = state?.grokSub2apiDefaultProxyName || '';
+  }
+  if (typeof inputGrokSub2ApiGrok2ApiUploadEnabled !== 'undefined' && inputGrokSub2ApiGrok2ApiUploadEnabled) {
+    inputGrokSub2ApiGrok2ApiUploadEnabled.checked = Boolean(state?.grokSub2apiGrok2ApiUploadEnabled);
+  }
   if (typeof inputKiroRsUrl !== 'undefined' && inputKiroRsUrl) {
     inputKiroRsUrl.value = String(state?.kiroRsUrl || '').trim();
   }
@@ -12005,14 +12136,34 @@ function applySettingsState(state) {
   if (typeof inputGrokWebchat2ApiKey !== 'undefined' && inputGrokWebchat2ApiKey) {
     inputGrokWebchat2ApiKey.value = String(getSharedWebchatAdminKeyFromState(state) || '');
   }
+  if (typeof inputGrok2ApiUrl !== 'undefined' && inputGrok2ApiUrl) {
+    inputGrok2ApiUrl.value = String(
+      state?.grok2ApiUrl
+      || state?.settingsState?.flows?.grok?.targets?.grok2api?.baseUrl
+      || ''
+    ).trim();
+  }
+  if (typeof inputGrok2ApiKey !== 'undefined' && inputGrok2ApiKey) {
+    inputGrok2ApiKey.value = String(
+      state?.grok2ApiAdminKey
+      || state?.settingsState?.flows?.grok?.targets?.grok2api?.apiKey
+      || ''
+    );
+  }
   if (typeof inputOpenAiWebchatUrl !== 'undefined' && inputOpenAiWebchatUrl) {
     inputOpenAiWebchatUrl.value = String(getSharedWebchatUrlFromState(state) || '').trim();
   }
   if (typeof inputOpenAiWebchatKey !== 'undefined' && inputOpenAiWebchatKey) {
     inputOpenAiWebchatKey.value = String(getSharedWebchatAdminKeyFromState(state) || '');
   }
+  if (typeof syncOpenAiChatgpt2ApiInputsFromState === 'function') {
+    syncOpenAiChatgpt2ApiInputsFromState(state);
+  }
   if (typeof renderOpenAiWebchatState === 'function') {
     renderOpenAiWebchatState(state);
+  }
+  if (typeof renderOpenAiChatgpt2ApiState === 'function') {
+    renderOpenAiChatgpt2ApiState(state);
   }
   if (typeof displayKiroRsTestStatus !== 'undefined' && displayKiroRsTestStatus) {
     displayKiroRsTestStatus.textContent = kiroRsConnectionTestStatusText;
@@ -12188,6 +12339,9 @@ function applySettingsState(state) {
     } else {
       selectEmailGenerator.value = 'duck';
     }
+  }
+  if (typeof inputDuckDdgToken !== 'undefined' && inputDuckDdgToken) {
+    inputDuckDdgToken.value = String(state?.duckDdgToken || '').trim();
   }
   if (selectIcloudHostPreference) {
     selectIcloudHostPreference.value = String(state?.icloudHostPreference || '').trim().toLowerCase() === 'icloud.com'
@@ -12509,6 +12663,9 @@ function applySettingsState(state) {
     }
   }
   updateButtonStates();
+  if (typeof applySidepanelI18n === 'function') {
+    applySidepanelI18n();
+  }
   if (typeof syncPlusManualConfirmationDialog === 'function') {
     void syncPlusManualConfirmationDialog();
   }
@@ -13838,6 +13995,10 @@ function updateMailProviderUI() {
   if (rowEmailGenerator) {
     rowEmailGenerator.style.display = useEmailGenerator ? '' : 'none';
   }
+  const showDuckDdgToken = useEmailGenerator && selectedGenerator === 'duck';
+  if (typeof rowDuckDdgToken !== 'undefined' && rowDuckDdgToken) {
+    rowDuckDdgToken.style.display = showDuckDdgToken ? '' : 'none';
+  }
   if (typeof rowCustomEmailPool !== 'undefined' && rowCustomEmailPool) {
     rowCustomEmailPool.style.display = useCustomEmailPool ? '' : 'none';
     if (useCustomEmailPool) {
@@ -14397,6 +14558,86 @@ async function handleDeleteSub2ApiGroup(groupName) {
   showToast(`已删除 SUB2API 分组：${targetName}`, 'success', 1600);
 }
 
+async function handleAddGrokSub2ApiGroup() {
+  if (!sharedFormDialog?.open) {
+    showToast('表单弹窗未加载，请刷新扩展后重试。', 'error');
+    return;
+  }
+
+  const result = await sharedFormDialog.open({
+    title: '添加 Grok SUB2API 分组',
+    confirmLabel: '添加',
+    confirmVariant: 'btn-primary',
+    fields: [
+      {
+        key: 'groupName',
+        label: '分组',
+        type: 'text',
+        placeholder: '例如 grok-team',
+        autocomplete: 'off',
+        required: true,
+        requiredMessage: '请先填写 Grok SUB2API 分组名称。',
+        validate: (value) => (
+          normalizeSub2ApiGroupOptions(value).length
+            ? ''
+            : '请先填写 Grok SUB2API 分组名称。'
+        ),
+      },
+    ],
+  });
+  if (!result) {
+    return;
+  }
+
+  const newGroups = normalizeSub2ApiGroupOptions(result.groupName);
+  if (!newGroups.length) {
+    return;
+  }
+
+  const selectedGroup = newGroups[0];
+  const nextGroups = normalizeSub2ApiGroupOptions(
+    getGrokSub2ApiGroupOptionsState(latestState),
+    newGroups
+  );
+  syncLatestState({
+    grokSub2apiGroupName: selectedGroup,
+    grokSub2apiGroupNames: nextGroups,
+  });
+  renderGrokSub2ApiGroupOptions(latestState, selectedGroup);
+  markSettingsDirty(true);
+  await saveSettings({ silent: true }).catch(() => { });
+  showToast(`已添加并切换到 Grok SUB2API 分组：${selectedGroup}`, 'success', 1800);
+}
+
+async function handleDeleteGrokSub2ApiGroup(groupName) {
+  const targetName = String(groupName || '').trim();
+  if (!targetName) {
+    return;
+  }
+
+  const currentGroups = getGrokSub2ApiGroupOptionsState(latestState);
+  const targetKey = targetName.toLowerCase();
+  const nextGroups = currentGroups.filter((name) => name.toLowerCase() !== targetKey);
+  if (nextGroups.length === currentGroups.length) {
+    return;
+  }
+
+  const currentGroup = getSelectedGrokSub2ApiGroupName();
+  const nextSelectedGroup = currentGroup.toLowerCase() === targetKey
+    ? (nextGroups[0] || '')
+    : (nextGroups.find((name) => name.toLowerCase() === currentGroup.toLowerCase()) || nextGroups[0] || '');
+
+  syncLatestState({
+    grokSub2apiGroupName: nextSelectedGroup,
+    grokSub2apiGroupNames: nextGroups,
+  });
+  renderGrokSub2ApiGroupOptions(latestState, nextSelectedGroup);
+  grokSub2ApiGroupPicker.setOpen(nextGroups.length > 0);
+  markSettingsDirty(true);
+  await saveSettings({ silent: true }).catch(() => { });
+  showToast(`已删除 Grok SUB2API 分组：${targetName}`, 'success', 1600);
+}
+
 function updatePanelModeUI() {
   const activeFlowId = typeof getSelectedFlowId === 'function'
     ? getSelectedFlowId(latestState)
@@ -14434,6 +14675,9 @@ function updatePanelModeUI() {
   if (typeof applyFlowSettingsGroupVisibility === 'function') {
     applyFlowSettingsGroupVisibility(visibleGroupIds);
   }
+  if (typeof updateGrokSub2ApiGrok2ApiUploadUi === 'function') {
+    updateGrokSub2ApiGrok2ApiUploadUi(activeFlowId, effectiveTargetId);
+  }
   if (typeof updatePlusModeUI === 'function') {
     updatePlusModeUI();
   }
@@ -14442,6 +14686,9 @@ function updatePanelModeUI() {
   }
   if (typeof renderOpenAiWebchatState === 'function') {
     renderOpenAiWebchatState(latestState);
+  }
+  if (typeof renderOpenAiChatgpt2ApiState === 'function') {
+    renderOpenAiChatgpt2ApiState(latestState);
   }
   const displayTargetId = normalizePanelMode(
     activeFlowId === DEFAULT_ACTIVE_FLOW_ID
@@ -14456,6 +14703,37 @@ function updatePanelModeUI() {
       ? 'SUB2API 回调验证'
       : (useCodex2Api ? 'Codex2API 回调验证' : 'CPA 回调验证');
   }
+}
+
+function updateGrokSub2ApiGrok2ApiUploadUi(activeFlowId = '', targetId = '') {
+  const normalizedFlowId = String(activeFlowId || '').trim().toLowerCase();
+  const normalizedTargetId = String(targetId || '').trim().toLowerCase();
+  const isGrok = normalizedFlowId === 'grok';
+  const isSub2Api = isGrok && normalizedTargetId === 'sub2api';
+  const enabled = Boolean(inputGrokSub2ApiGrok2ApiUploadEnabled?.checked);
+  const showGrok2ApiControls = isGrok && (
+    normalizedTargetId === 'grok2api'
+    || (isSub2Api && enabled)
+  );
+  const showSsoControls = isGrok && (
+    normalizedTargetId === 'webchat2api'
+    || normalizedTargetId === 'grok2api'
+    || (isSub2Api && enabled)
+  );
+
+  if (rowGrokSub2ApiGrok2ApiUpload) {
+    rowGrokSub2ApiGrok2ApiUpload.style.display = isSub2Api ? '' : 'none';
+  }
+  [rowGrok2ApiUrl, rowGrok2ApiKey].forEach((row) => {
+    if (row) {
+      row.style.display = showGrok2ApiControls ? '' : 'none';
+    }
+  });
+  [rowGrokSsoStatus, rowGrokSsoSettings].forEach((row) => {
+    if (row) {
+      row.style.display = showSsoControls ? '' : 'none';
+    }
+  });
 }
 
 // ============================================================
@@ -14728,14 +15006,15 @@ function appendLog(entry) {
   const stepNum = normalizedStep > 0 ? String(normalizedStep) : null;
 
   let html = `<span class="log-time">${time}</span> `;
-  html += `<span class="log-level log-level-${entry.level}">${levelLabel}</span> `;
+  html += `<span class="log-level log-level-${entry.level}">${escapeHtml(levelLabel)}</span> `;
   if (stepNum) {
-    html += `<span class="log-step-tag step-${stepNum}">步${stepNum}</span>`;
+    html += `<span class="log-step-tag step-${stepNum}">${escapeHtml(`步${stepNum}`)}</span>`;
   }
   html += `<span class="log-msg">${escapeHtml(entry.message)}</span>`;
 
   line.innerHTML = html;
   logArea.appendChild(line);
+  applySidepanelI18nToNode(line);
   logArea.scrollTop = logArea.scrollHeight;
 }
 
@@ -14765,6 +15044,7 @@ async function fetchGeneratedEmail(options = {}) {
         generator: selectEmailGenerator.value,
         mailProvider: selectMailProvider.value,
         mail2925Mode: getSelectedMail2925Mode(),
+        duckDdgToken: inputDuckDdgToken ? String(inputDuckDdgToken.value || '').trim() : '',
         ...(getSelectedEmailGenerator() === CUSTOM_EMAIL_POOL_GENERATOR
           ? {
               customEmailPool: getActiveCustomEmailPoolEmails(),
@@ -15675,10 +15955,6 @@ stepsList?.addEventListener('click', async (event) => {
       return;
     }
     await persistCurrentSettingsForAction();
-    const gpcCreateStep = getStepIdByKeyForCurrentMode('plus-checkout-create') || 6;
-    if (step === gpcCreateStep && !(await ensureGpcCardKeyReadyForStart())) {
-      return;
-    }
     const shouldPersistSharedPassword = nodeId === 'fill-password'
       || nodeId === 'kiro-submit-password'
       || nodeId === 'grok-submit-profile';
@@ -15883,6 +16159,14 @@ configMenu?.addEventListener('click', (event) => {
   event.stopPropagation();
 });
 
+selectUiLanguage?.addEventListener('change', () => {
+  currentUiLanguage = normalizeUiLanguage(selectUiLanguage.value);
+  currentUiLocale = resolveUiLocale(currentUiLanguage);
+  applySidepanelI18n();
+  markSettingsDirty(true);
+  saveSettings({ silent: true }).catch(() => { });
+});
+
 btnExportSettings?.addEventListener('click', async () => {
   if (configActionInFlight || settingsSaveInFlight) {
     return;
@@ -15970,11 +16254,6 @@ async function startAutoRunFromCurrentSettings() {
     clearPendingAutoRunStartRunCount();
     throw new Error(autoRunStartValidation.errors?.[0]?.message || '当前设置不支持启动自动流程。');
   }
-  if (!(await ensureGpcCardKeyReadyForStart())) {
-    clearPendingAutoRunStartRunCount();
-    return false;
-  }
-
   const customEmailPoolEnabled = typeof usesCustomEmailPoolGenerator === 'function'
     && usesCustomEmailPoolGenerator();
   const lockedRunCount = typeof getLockedRunCountFromEmailPool === 'function'
@@ -16314,14 +16593,6 @@ inputPlusModeEnabled?.addEventListener('change', () => {
   saveSettings({ silent: true }).catch(() => { });
 });
 
-btnGpcCardKeyPurchase?.addEventListener('click', () => {
-  openExternalUrl('https://pay.ldxp.cn/shop/gpc');
-});
-
-btnAutoCdkPurchase?.addEventListener('click', () => {
-  openExternalUrl('https://shop.qlhazycoder.top/');
-});
-
 btnOpenTargetRepository?.addEventListener('click', () => {
   const repositoryUrl = btnOpenTargetRepository.dataset.repositoryUrl
     || getTargetRepositoryUrl(getSelectedFlowId(), getSelectedTargetId());
@@ -16397,7 +16668,6 @@ selectPlusPaymentMethod?.addEventListener('change', () => {
   inputHostedCheckoutVerificationUrl,
   inputHostedCheckoutPhone,
   inputPlusHostedCheckoutOauthDelaySeconds,
-  inputAutoCdk,
 ].forEach((input) => {
   input?.addEventListener('input', () => {
     markSettingsDirty(true);
@@ -16410,29 +16680,6 @@ selectPlusPaymentMethod?.addEventListener('change', () => {
   input?.addEventListener('blur', () => {
     saveSettings({ silent: true }).catch(() => { });
   });
-});
-
-inputGpcCardKey?.addEventListener('input', () => {
-  markSettingsDirty(true);
-  scheduleSettingsAutoSave();
-  scheduleGpcCardKeyStatusRefresh();
-});
-inputGpcCardKey?.addEventListener('change', () => {
-  markSettingsDirty(true);
-  saveSettings({ silent: true }).catch(() => { });
-  refreshGpcCardKeyStatus({ reason: 'change' }).catch(() => { });
-});
-inputGpcCardKey?.addEventListener('blur', () => {
-  saveSettings({ silent: true }).catch(() => { });
-  refreshGpcCardKeyStatus({ reason: 'blur' }).catch(() => { });
-});
-btnGpcCardKeyQuery?.addEventListener('click', async () => {
-  btnGpcCardKeyQuery.disabled = true;
-  try {
-    await refreshGpcCardKeyStatus({ reason: 'manual' });
-  } finally {
-    btnGpcCardKeyQuery.disabled = false;
-  }
 });
 
 selectMailProvider.addEventListener('change', async () => {
@@ -16547,6 +16794,16 @@ tempEmailLookupModeButtons.forEach((button) => {
 selectEmailGenerator.addEventListener('change', () => {
   updateMailProviderUI();
   clearRegistrationEmail({ silent: true }).catch(() => { });
+  markSettingsDirty(true);
+  saveSettings({ silent: true }).catch(() => { });
+});
+
+inputDuckDdgToken?.addEventListener('input', () => {
+  markSettingsDirty(true);
+  scheduleSettingsAutoSave();
+});
+
+inputDuckDdgToken?.addEventListener('change', () => {
   markSettingsDirty(true);
   saveSettings({ silent: true }).catch(() => { });
 });
@@ -16709,6 +16966,20 @@ selectPlusAccountAccessStrategy?.addEventListener('change', () => {
   });
 });
 
+[inputGrok2ApiUrl, inputGrok2ApiKey].forEach((input) => {
+  input?.addEventListener('input', () => {
+    syncLatestState({
+      grok2ApiUrl: String(inputGrok2ApiUrl?.value || '').trim(),
+      grok2ApiAdminKey: String(inputGrok2ApiKey?.value || '').trim(),
+    });
+    markSettingsDirty(true);
+    scheduleSettingsAutoSave();
+  });
+  input?.addEventListener('blur', () => {
+    saveSettings({ silent: true }).catch(() => { });
+  });
+});
+
 [inputOpenAiWebchatUrl, inputOpenAiWebchatKey].forEach((input) => {
   input?.addEventListener('input', () => {
     syncLatestState(buildSharedWebchatConfigPatch(
@@ -16721,6 +16992,23 @@ selectPlusAccountAccessStrategy?.addEventListener('change', () => {
       syncLatestState({ openaiWebchatUploadEnabled: false });
     }
     renderOpenAiWebchatState(latestState);
+    syncStepDefinitionsFromUiState(latestState);
+    markSettingsDirty(true);
+    scheduleSettingsAutoSave();
+  });
+  input?.addEventListener('blur', () => {
+    saveSettings({ silent: true }).catch(() => { });
+  });
+});
+
+[inputOpenAiChatgpt2ApiUrl, inputOpenAiChatgpt2ApiKey].forEach((input) => {
+  input?.addEventListener('input', () => {
+    syncLatestState(buildOpenAiChatgpt2ApiConfigPatch(
+      inputOpenAiChatgpt2ApiUrl ? inputOpenAiChatgpt2ApiUrl.value : getOpenAiChatgpt2ApiUrlFromState(latestState),
+      inputOpenAiChatgpt2ApiKey ? inputOpenAiChatgpt2ApiKey.value : getOpenAiChatgpt2ApiAdminKeyFromState(latestState)
+    ));
+    syncOpenAiChatgpt2ApiInputsFromState(latestState);
+    renderOpenAiChatgpt2ApiState(latestState);
     syncStepDefinitionsFromUiState(latestState);
     markSettingsDirty(true);
     scheduleSettingsAutoSave();
@@ -17100,6 +17388,59 @@ inputSub2ApiDefaultProxy.addEventListener('input', () => {
   scheduleSettingsAutoSave();
 });
 inputSub2ApiDefaultProxy.addEventListener('blur', () => {
+  saveSettings({ silent: true }).catch(() => { });
+});
+
+inputGrokSub2ApiGroup.addEventListener('change', () => {
+  syncLatestState({
+    grokSub2apiGroupName: getSelectedGrokSub2ApiGroupName(),
+    grokSub2apiGroupNames: normalizeSub2ApiGroupOptions(
+      getGrokSub2ApiGroupOptionsState(latestState),
+      getSelectedGrokSub2ApiGroupName()
+    ),
+  });
+  markSettingsDirty(true);
+  saveSettings({ silent: true }).catch(() => { });
+});
+
+inputGrokSub2ApiAccountPriority.addEventListener('input', () => {
+  markSettingsDirty(true);
+  scheduleSettingsAutoSave();
+});
+inputGrokSub2ApiAccountPriority.addEventListener('blur', () => {
+  inputGrokSub2ApiAccountPriority.value = String(
+    normalizeSub2ApiAccountPriorityValue(inputGrokSub2ApiAccountPriority.value)
+  );
+  saveSettings({ silent: true }).catch(() => { });
+});
+
+btnAddGrokSub2ApiGroup?.addEventListener('click', () => {
+  handleAddGrokSub2ApiGroup().catch((error) => {
+    showToast(error?.message || '添加 Grok SUB2API 分组失败。', 'error');
+  });
+});
+
+inputGrokSub2ApiDefaultProxy.addEventListener('input', () => {
+  markSettingsDirty(true);
+  scheduleSettingsAutoSave();
+});
+inputGrokSub2ApiDefaultProxy.addEventListener('blur', () => {
+  saveSettings({ silent: true }).catch(() => { });
+});
+
+inputGrokSub2ApiGrok2ApiUploadEnabled?.addEventListener('change', () => {
+  const enabled = Boolean(inputGrokSub2ApiGrok2ApiUploadEnabled.checked);
+  syncLatestState({ grokSub2apiGrok2ApiUploadEnabled: enabled });
+  updateGrokSub2ApiGrok2ApiUploadUi(
+    typeof getSelectedFlowId === 'function' ? getSelectedFlowId(latestState) : latestState?.activeFlowId,
+    typeof getSelectedTargetId === 'function' ? getSelectedTargetId('grok') : latestState?.targetId
+  );
+  syncStepDefinitionsFromUiState({
+    grokSub2apiGrok2ApiUploadEnabled: enabled,
+  });
+  renderStepStatuses(latestState);
+  updateButtonStates();
+  markSettingsDirty(true);
   saveSettings({ silent: true }).catch(() => { });
 });
 
@@ -18772,10 +19113,28 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         syncStepDefinitionsFromUiState(latestState);
       }
       if (
+        message.payload.openaiChatgpt2ApiUrl !== undefined
+        || message.payload.openaiChatgpt2ApiAdminKey !== undefined
+        || message.payload.openaiChatgpt2ApiUploadStatus !== undefined
+        || message.payload.openaiChatgpt2ApiUploadedAt !== undefined
+        || message.payload.openaiChatgpt2ApiUploadMessage !== undefined
+        || message.payload.openaiChatgpt2ApiTargetUrl !== undefined
+      ) {
+        syncOpenAiChatgpt2ApiInputsFromState(latestState);
+        renderOpenAiChatgpt2ApiState(latestState);
+        syncStepDefinitionsFromUiState(latestState);
+      }
+      if (
         message.payload.sub2apiGroupName !== undefined
         || message.payload.sub2apiGroupNames !== undefined
       ) {
         renderSub2ApiGroupOptions(latestState, latestState?.sub2apiGroupName || '');
+      }
+      if (
+        message.payload.grokSub2apiGroupName !== undefined
+        || message.payload.grokSub2apiGroupNames !== undefined
+      ) {
+        renderGrokSub2ApiGroupOptions(latestState, latestState?.grokSub2apiGroupName || '');
       }
       if (
         message.payload.ipProxyEnabled !== undefined
@@ -19000,33 +19359,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.payload.cloudMailDomain !== undefined && inputCloudMailDomain) {
         inputCloudMailDomain.value = message.payload.cloudMailDomain || '';
       }
+      if (message.payload.duckDdgToken !== undefined && inputDuckDdgToken) {
+        inputDuckDdgToken.value = String(message.payload.duckDdgToken || '').trim();
+        updateMailProviderUI();
+      }
       if (message.payload.plusModeEnabled !== undefined && inputPlusModeEnabled) {
-        inputPlusModeEnabled.checked = Boolean(message.payload.plusModeEnabled);
+        inputPlusModeEnabled.checked = false;
       }
       if (message.payload.plusPaymentMethod !== undefined && selectPlusPaymentMethod) {
         selectPlusPaymentMethod.value = normalizePlusPaymentMethod(message.payload.plusPaymentMethod);
-      }
-      if (message.payload.gpcCardKey !== undefined && inputGpcCardKey) {
-        inputGpcCardKey.value = message.payload.gpcCardKey || '';
-      }
-      if (message.payload.autoCdk !== undefined && typeof inputAutoCdk !== 'undefined' && inputAutoCdk) {
-        inputAutoCdk.value = message.payload.autoCdk || '';
-      }
-      if (
-        message.payload.gpcBalance !== undefined
-        || message.payload.gpcRemainingUses !== undefined
-        || message.payload.gpcCardStatus !== undefined
-        || message.payload.gpcBalanceError !== undefined
-      ) {
-        if (message.payload.gpcBalanceError) {
-          setGpcCardKeyStatus(message.payload.gpcBalanceError, 'error');
-        } else {
-          setGpcCardKeyStatus(formatGpcCardKeyBalanceStatus({
-            balance: latestState?.gpcBalance,
-            remainingUses: latestState?.gpcRemainingUses,
-            cardStatus: latestState?.gpcCardStatus,
-          }), 'ok');
-        }
       }
       if (message.payload.plusAccountAccessStrategy !== undefined && selectPlusAccountAccessStrategy) {
         currentPlusAccountAccessStrategy = normalizePlusAccountAccessStrategy(message.payload.plusAccountAccessStrategy);

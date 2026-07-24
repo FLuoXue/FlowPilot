@@ -40,7 +40,6 @@
       executeNodeViaCompletionSignal,
       exportSettingsBundle,
       fetchGeneratedEmail,
-      refreshGpcCardBalance,
       testKiroRsConnection,
       finalizePhoneActivationAfterSuccessfulFlow,
       finalizeStep3Completion,
@@ -249,7 +248,7 @@
         updates.phoneVerificationEnabled = Boolean(payload.phoneVerificationEnabled);
       }
       if (hasPlusModeEnabled) {
-        updates.plusModeEnabled = Boolean(payload.plusModeEnabled);
+        updates.plusModeEnabled = false;
       }
       if (hasSignupMethod || hasPhoneVerificationEnabled || hasPlusModeEnabled || hasTargetId || hasActiveFlowId) {
         updates.resolvedSignupMethod = null;
@@ -646,6 +645,27 @@
       };
     }
 
+    async function skipRegistrationWaitStepAfter(currentStep, state = {}) {
+      const step6 = findStepByKeyAfter(currentStep, 'wait-registration-success', state)
+        || (getStepKeyForState(6, state) === 'wait-registration-success' ? 6 : null);
+      if (!step6) {
+        return false;
+      }
+      const step6Status = getNodeStatusByStep(step6, state);
+      if (isStepProtectedFromAutoSkip(step6Status)) {
+        return false;
+      }
+      await setNodeStatusByStep(step6, 'skipped', state);
+      const currentStepKey = getStepKeyForState(currentStep, state)
+        || (Number(currentStep) === 3 ? 'fill-password' : 'fetch-signup-code');
+      await addLog(
+        `步骤 ${currentStep}：账号已进入 ChatGPT 已登录态，已自动跳过步骤 ${step6}，流程将直接进入后续节点。`,
+        'warn',
+        { step: currentStep, stepKey: currentStepKey }
+      );
+      return true;
+    }
+
     function findStepByKeyAfter(currentOrder, targetKey, state = {}) {
       const activeStepIds = typeof getStepIdsForState === 'function'
         ? getStepIdsForState(state)
@@ -680,17 +700,11 @@
 
     function normalizePlusPaymentMethodForDisplay(value = '') {
       const normalized = String(value || '').trim().toLowerCase();
-      if (normalized === 'none' || normalized === 'no-payment' || normalized === 'skip-payment') {
+      if (normalized === 'none') {
         return 'none';
       }
-      if (normalized === 'paypal-hosted' || normalized === 'paypal_direct' || normalized === 'paypal-direct') {
+      if (normalized === 'paypal-hosted') {
         return 'paypal-hosted';
-      }
-      if (normalized === 'gpc-helper') {
-        return 'gpc-helper';
-      }
-      if (normalized === 'plus-auto' || normalized === 'pix' || normalized === 'pix_plus' || normalized === 'pixplus') {
-        return 'plus-auto';
       }
       return 'paypal';
     }
@@ -702,12 +716,6 @@
       }
       if (method === 'paypal-hosted') {
         return 'PayPal 无卡直绑';
-      }
-      if (method === 'gpc-helper') {
-        return 'GPC';
-      }
-      if (method === 'plus-auto') {
-        return 'Plus 自动充值';
       }
       return 'PayPal';
     }
@@ -994,6 +1002,9 @@
               await addLog('步骤 3：页面已直接进入已登录态，已自动跳过步骤 5。', 'warn');
             }
           }
+          if (payload.skipRegistrationWaitStep) {
+            await skipRegistrationWaitStepAfter(step, await getState());
+          }
           if (payload.loginVerificationRequestedAt) {
             await setState({ loginVerificationRequestedAt: payload.loginVerificationRequestedAt });
           }
@@ -1020,6 +1031,9 @@
                 await addLog('步骤 4：检测到账号已直接进入已登录态，已自动跳过步骤 5。', 'warn');
               }
             }
+          }
+          if (payload.skipRegistrationWaitStep) {
+            await skipRegistrationWaitStepAfter(step, await getState());
           }
           break;
         case 7:
@@ -1647,20 +1661,6 @@
             proxyRouting,
             state: await getState(),
           };
-        }
-
-        case 'REFRESH_GPC_CARD_BALANCE': {
-          if (typeof refreshGpcCardBalance !== 'function') {
-            throw new Error('GPC 卡密查询能力尚未接入。');
-          }
-          const state = await getState();
-          const result = await refreshGpcCardBalance({
-            ...(state || {}),
-            ...(message.payload || {}),
-          }, {
-            reason: message.payload?.reason,
-          });
-          return { ok: true, ...result };
         }
 
         case 'CHECK_KIRO_RS_CONNECTION': {

@@ -13,7 +13,6 @@ function createRouter(overrides = {}) {
     nodeStatuses: [],
     stateUpdates: [],
     broadcasts: [],
-    balanceRefreshes: [],
     emailStates: [],
     persistedRegistrationEmails: [],
     signupPhoneStates: [],
@@ -231,10 +230,6 @@ function createRouter(overrides = {}) {
     testHotmailAccountMailAccess: async () => {},
     upsertHotmailAccount: async () => {},
     verifyHotmailAccount: async () => {},
-    refreshGpcCardBalance: overrides.refreshGpcCardBalance || (async (state, options) => {
-      events.balanceRefreshes.push({ state, options });
-      return { balance: '余额 3', remainingUses: 3, cardStatus: 'active' };
-    }),
   });
 
   return { router, events, getState: () => normalizeState(currentState) };
@@ -396,6 +391,60 @@ test('message router skips step 5 when step 4 reports already logged-in transiti
 
   assert.deepStrictEqual(events.stepStatuses, [{ step: 5, status: 'skipped' }]);
   assert.equal(events.logs[0]?.message, '步骤 4：检测到账号已直接进入已登录态，已自动跳过步骤 5。');
+});
+
+test('message router skips steps 5 and registration wait when step 4 reaches logged-in home', async () => {
+  const { router, events } = createRouter({
+    state: { stepStatuses: { 5: 'pending', 6: 'pending' } },
+  });
+
+  await router.handleStepData(4, {
+    emailTimestamp: 123,
+    skipProfileStep: true,
+    skipRegistrationWaitStep: true,
+  });
+
+  assert.deepStrictEqual(events.stepStatuses, [
+    { step: 5, status: 'skipped' },
+    { step: 6, status: 'skipped' },
+  ]);
+  assert.equal(events.logs[0]?.message, '步骤 4：检测到账号已直接进入已登录态，已自动跳过步骤 5。');
+  assert.equal(events.logs[1]?.message, '步骤 4：账号已进入 ChatGPT 已登录态，已自动跳过步骤 6，流程将直接进入后续节点。');
+});
+
+test('message router can skip dynamic registration wait step independently of profile skip', async () => {
+  const stepKeys = {
+    4: 'fetch-signup-code',
+    5: 'fill-profile',
+    7: 'wait-registration-success',
+    8: 'openai-upload-session-to-webchat',
+  };
+  const { router, events } = createRouter({
+    state: { stepStatuses: { 5: 'pending', 7: 'pending' } },
+    nodeByStep: {
+      4: 'fetch-signup-code',
+      5: 'fill-profile',
+      7: 'wait-registration-success',
+      8: 'openai-upload-session-to-webchat',
+    },
+    stepByNode: {
+      'fetch-signup-code': 4,
+      'fill-profile': 5,
+      'wait-registration-success': 7,
+      'openai-upload-session-to-webchat': 8,
+    },
+    getStepDefinitionForState: (step) => ({ id: step, key: stepKeys[step] || '' }),
+    getStepIdsForState: () => [4, 5, 7, 8],
+    getNodeIdsForState: () => ['fetch-signup-code', 'fill-profile', 'wait-registration-success', 'openai-upload-session-to-webchat'],
+  });
+
+  await router.handleStepData(4, {
+    emailTimestamp: 123,
+    skipRegistrationWaitStep: true,
+  });
+
+  assert.deepStrictEqual(events.stepStatuses, [{ step: 7, status: 'skipped' }]);
+  assert.equal(events.logs[0]?.message, '步骤 4：账号已进入 ChatGPT 已登录态，已自动跳过步骤 7，流程将直接进入后续节点。');
 });
 
 test('message router skips login-code step when oauth login lands on consent page', async () => {
@@ -866,30 +915,6 @@ test('message router delegates Kiro manual step 4 without OpenAI auth-tab prereq
     { step: 4, options: { logLabel: '节点 kiro-submit-verification-code 重新执行' } },
   ]);
   assert.deepStrictEqual(events.executedSteps, [4]);
-});
-
-test('message router refreshes GPC balance through explicit sidepanel message', async () => {
-  const state = {
-    plusPaymentMethod: 'gpc-helper',
-    gpcBaseUrl: 'http://localhost:18473/',
-    gpcCardKey: 'GPC-11111111-22222222-33333333',
-  };
-  const { router, events } = createRouter({ state });
-
-  const response = await router.handleMessage({
-    type: 'REFRESH_GPC_CARD_BALANCE',
-    source: 'sidepanel',
-    payload: {
-      gpcCardKey: 'GPC-6C9F1A32-45734795-914E6F00',
-      reason: 'manual',
-    },
-  }, {});
-
-  assert.deepStrictEqual(response, { ok: true, balance: '余额 3', remainingUses: 3, cardStatus: 'active' });
-  assert.equal(events.balanceRefreshes.length, 1);
-  assert.equal(events.balanceRefreshes[0].state.gpcBaseUrl, 'http://localhost:18473/');
-  assert.equal(events.balanceRefreshes[0].state.gpcCardKey, 'GPC-6C9F1A32-45734795-914E6F00');
-  assert.deepStrictEqual(events.balanceRefreshes[0].options, { reason: 'manual' });
 });
 
 test('message router ignores stale step 2 errors while auto-run is already on a later step', async () => {

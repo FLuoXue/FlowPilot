@@ -31,9 +31,16 @@ test('step definitions module exposes ordered normal and Plus step metadata', ()
     phoneSignupReloginAfterBindEmailEnabled: true,
   });
   const legacyPaymentSteps = api.getSteps({ plusModeEnabled: true, plusPaymentMethod: 'gopay' });
-  const gpcSteps = api.getSteps({ plusModeEnabled: true, plusPaymentMethod: 'gpc-helper' });
   const kiroSteps = api.getSteps({ activeFlowId: 'kiro' });
   const grokSteps = api.getSteps({ activeFlowId: 'grok' });
+  const grok2ApiSteps = api.getSteps({ activeFlowId: 'grok', targetId: 'grok2api' });
+  const grokSub2ApiSteps = api.getSteps({ activeFlowId: 'grok', targetId: 'sub2api' });
+  const grokSub2ApiDualPublishSteps = api.getSteps({
+    activeFlowId: 'grok',
+    targetId: 'sub2api',
+    grokSub2apiGrok2ApiUploadEnabled: true,
+  });
+  const grokAllSteps = api.getAllSteps({ activeFlowId: 'grok' });
 
   assert.equal(Array.isArray(steps), true);
   assert.equal(steps.length, 11);
@@ -257,6 +264,71 @@ test('step definitions module exposes ordered normal and Plus step metadata', ()
       [],
     ]
   );
+  assert.deepStrictEqual(
+    grok2ApiSteps.map((step) => step.key),
+    [
+      'grok-open-signup-page',
+      'grok-submit-email',
+      'grok-submit-verification-code',
+      'grok-submit-profile',
+      'grok-extract-sso-cookie',
+      'grok-upload-sso-to-grok2api',
+    ]
+  );
+  assert.equal(grok2ApiSteps[5].driverId, 'flows/grok/background/publisher-grok2api');
+  assert.equal(grok2ApiSteps[5].sourceId, 'grok-grok2api');
+  assert.deepStrictEqual(
+    grokSub2ApiSteps.map((step) => step.key),
+    [
+      'grok-open-signup-page',
+      'grok-submit-email',
+      'grok-submit-verification-code',
+      'grok-submit-profile',
+      'grok-start-sub2api-oauth',
+      'grok-complete-sub2api-oauth',
+    ]
+  );
+  assert.equal(grokSub2ApiSteps[4].driverId, 'flows/grok/background/sub2api-oauth-runner');
+  assert.equal(grokSub2ApiSteps[4].sourceId, 'grok-sub2api-oauth-page');
+  assert.deepStrictEqual(
+    grokSub2ApiDualPublishSteps.map((step) => step.key),
+    [
+      'grok-open-signup-page',
+      'grok-submit-email',
+      'grok-submit-verification-code',
+      'grok-submit-profile',
+      'grok-extract-sso-cookie',
+      'grok-upload-sso-to-grok2api',
+      'grok-start-sub2api-oauth',
+      'grok-complete-sub2api-oauth',
+    ]
+  );
+  assert.deepStrictEqual(grokSub2ApiDualPublishSteps.map((step) => step.id), [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepStrictEqual(
+    grokAllSteps.map((step) => step.key),
+    [
+      'grok-open-signup-page',
+      'grok-submit-email',
+      'grok-submit-verification-code',
+      'grok-submit-profile',
+      'grok-extract-sso-cookie',
+      'grok-upload-sso-to-webchat2api',
+      'grok-upload-sso-to-grok2api',
+      'grok-start-sub2api-oauth',
+      'grok-complete-sub2api-oauth',
+    ]
+  );
+  assert.deepStrictEqual(
+    api.getNodes({ activeFlowId: 'grok', targetId: 'sub2api' }).map((node) => node.next),
+    [
+      ['grok-submit-email'],
+      ['grok-submit-verification-code'],
+      ['grok-submit-profile'],
+      ['grok-start-sub2api-oauth'],
+      ['grok-complete-sub2api-oauth'],
+      [],
+    ]
+  );
   assert.equal(plusSteps[6].title, '创建 Plus Checkout');
   assert.equal(plusSteps[8].title, 'PayPal 登录与授权');
 
@@ -299,28 +371,6 @@ test('step definitions module exposes ordered normal and Plus step metadata', ()
     api.getLastStepId({ plusModeEnabled: true, plusPaymentMethod: 'paypal' })
   );
 
-  assert.deepStrictEqual(
-    gpcSteps.map((step) => step.key),
-    [
-      'open-chatgpt',
-      'submit-signup-email',
-      'fill-password',
-      'fetch-signup-code',
-      'fill-profile',
-      'wait-registration-success',
-      'plus-checkout-create',
-      'plus-checkout-billing',
-      'oauth-login',
-      'fetch-login-code',
-      'post-login-phone-verification',
-      'confirm-oauth',
-      'platform-verify',
-    ]
-  );
-  assert.deepStrictEqual(api.getStepIds({ plusModeEnabled: true, plusPaymentMethod: 'gpc-helper' }), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-  assert.equal(api.getLastStepId({ plusModeEnabled: true, plusPaymentMethod: 'gpc-helper' }), 13);
-  assert.equal(gpcSteps[6].title, '打开 GPC 页面并准备');
-  assert.equal(gpcSteps[7].title, '启动并等待 GPC 完成');
 });
 
 test('Plus no-payment mode removes only payment chain nodes', () => {
@@ -460,12 +510,13 @@ test('OpenAI OAuth workflow removes post-login phone verification when phone ver
   });
 });
 
-test('OpenAI webchat upload is appended only for webchat target', () => {
+test('OpenAI remote upload is appended only for remote publication targets', () => {
   const globalScope = {};
   const api = new Function('self', `${readStepDefinitionsBundle()}; return self.MultiPageStepDefinitions;`)(globalScope);
 
   const normalKeys = api.getSteps({ targetId: 'cpa' }).map((step) => step.key);
   assert.equal(normalKeys.includes('openai-upload-session-to-webchat'), false);
+  assert.equal(normalKeys.includes('openai-upload-session-to-chatgpt2api'), false);
 
   const webchatSteps = api.getSteps({ targetId: 'webchat' });
   const webchatNodes = api.getNodes({ targetId: 'webchat' });
@@ -498,11 +549,43 @@ test('OpenAI webchat upload is appended only for webchat target', () => {
   );
   assert.deepStrictEqual(webchatNodes.at(-1)?.next, []);
 
+  const chatgpt2ApiSteps = api.getSteps({ targetId: 'chatgpt2api' });
+  const chatgpt2ApiNodes = api.getNodes({ targetId: 'chatgpt2api' });
+  const chatgpt2ApiKeys = chatgpt2ApiSteps.map((step) => step.key);
+  assert.deepStrictEqual(chatgpt2ApiKeys, [
+    'open-chatgpt',
+    'submit-signup-email',
+    'fill-password',
+    'fetch-signup-code',
+    'fill-profile',
+    'wait-registration-success',
+    'openai-upload-session-to-chatgpt2api',
+  ]);
+  assert.equal(chatgpt2ApiSteps.at(-1)?.key, 'openai-upload-session-to-chatgpt2api');
+  assert.equal(chatgpt2ApiSteps.at(-1)?.sourceId, 'openai-chatgpt2api');
+  assert.equal(chatgpt2ApiSteps.at(-1)?.driverId, 'flows/openai/background/publisher-chatgpt2api');
+  [
+    'oauth-login',
+    'fetch-login-code',
+    'post-login-phone-verification',
+    'confirm-oauth',
+    'platform-verify',
+  ].forEach((key) => {
+    assert.equal(chatgpt2ApiKeys.includes(key), false);
+    assert.equal(chatgpt2ApiNodes.some((node) => node.nodeId === key), false);
+  });
+  assert.deepStrictEqual(
+    chatgpt2ApiNodes.find((node) => node.nodeId === 'wait-registration-success')?.next,
+    ['openai-upload-session-to-chatgpt2api']
+  );
+  assert.deepStrictEqual(chatgpt2ApiNodes.at(-1)?.next, []);
+
   const cpaSyncSteps = api.getSteps({
     targetId: 'cpa',
     openaiWebchatUploadEnabled: true,
   });
   assert.equal(cpaSyncSteps.some((step) => step.key === 'openai-upload-session-to-webchat'), false);
+  assert.equal(cpaSyncSteps.some((step) => step.key === 'openai-upload-session-to-chatgpt2api'), false);
 
   const schemaSyncSteps = api.getSteps({
     targetId: 'sub2api',
@@ -515,6 +598,7 @@ test('OpenAI webchat upload is appended only for webchat target', () => {
     },
   });
   assert.equal(schemaSyncSteps.some((step) => step.key === 'openai-upload-session-to-webchat'), false);
+  assert.equal(schemaSyncSteps.some((step) => step.key === 'openai-upload-session-to-chatgpt2api'), false);
 });
 
 test('Plus session strategy swaps the OAuth tail for a single SUB2API import node', () => {
@@ -548,16 +632,6 @@ test('Plus session strategy swaps the OAuth tail for a single SUB2API import nod
       },
       previousNodeId: 'paypal-hosted-review',
       expectedStepIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    },
-    {
-      label: 'gpc-helper',
-      options: {
-        plusModeEnabled: true,
-        plusPaymentMethod: 'gpc-helper',
-        plusAccountAccessStrategy: 'sub2api_codex_session',
-      },
-      previousNodeId: 'plus-checkout-billing',
-      expectedStepIds: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     },
   ].forEach(({ label, options, previousNodeId, expectedStepIds }) => {
     const steps = api.getSteps(options);
@@ -630,16 +704,6 @@ test('Plus session strategy swaps the OAuth tail for a single CPA import node', 
       previousNodeId: 'paypal-hosted-review',
       expectedStepIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     },
-    {
-      label: 'gpc-helper',
-      options: {
-        plusModeEnabled: true,
-        plusPaymentMethod: 'gpc-helper',
-        plusAccountAccessStrategy: 'cpa_codex_session',
-      },
-      previousNodeId: 'plus-checkout-billing',
-      expectedStepIds: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
   ].forEach(({ label, options, previousNodeId, expectedStepIds }) => {
     const steps = api.getSteps(options);
     const nodes = api.getNodes(options);
@@ -673,22 +737,18 @@ test('sidepanel html loads shared step definitions before sidepanel bootstrap', 
   assert.ok(definitionsIndex < sidepanelIndex);
 });
 
-test('sidepanel html exposes Plus mode, PayPal, no-payment, and GPC settings', () => {
+test('sidepanel html hides Plus mode and keeps dormant supported payment settings', () => {
   const html = fs.readFileSync('sidepanel/sidepanel.html', 'utf8');
   const visibleHtml = stripHtmlComments(html);
   const plusPaymentSelect = getSelectMarkup(visibleHtml, 'select-plus-payment-method');
-  assert.match(html, /id="input-plus-mode-enabled"/);
+  assert.match(html, /id="row-plus-mode" style="display:none;"/);
+  assert.match(html, /id="input-plus-mode-enabled" disabled/);
   assert.match(html, /id="select-plus-payment-method"/);
-  assert.match(plusPaymentSelect, /<option value="plus-auto" selected>Plus 自动充值<\/option>/);
   assert.match(html, /<option value="none">无需支付<\/option>/);
+  assert.match(html, /<option value="paypal-hosted">PayPal 无卡直绑<\/option>/);
+  assert.match(html, /<option value="paypal" selected>PayPal<\/option>/);
   assert.match(html, /id="select-paypal-account"/);
   assert.match(html, /id="btn-add-paypal-account"/);
-  assert.match(html, /<option value="plus-auto" selected>Plus 自动充值<\/option>/);
-  assert.match(html, /id="btn-gpc-card-key-purchase"/);
-  assert.match(html, /id="btn-gpc-card-key-query"/);
-  assert.match(html, />购买卡密</);
-  assert.match(html, />查询</);
-  assert.match(html, /GPC 卡密/);
-  assert.match(html, /id="input-gpc-card-key"/);
+  assert.doesNotMatch(plusPaymentSelect, /gpc-helper|plus-auto/);
   assert.match(html, /id="shared-form-modal"/);
 });

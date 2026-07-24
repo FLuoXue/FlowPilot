@@ -25,7 +25,7 @@
       getState,
       hasSavedNodeProgress,
       isAddPhoneAuthFailure,
-      isGpcPageFlowEndedFailure,
+      isDuckDdgDailyLimitFailure,
       isKiroProxyFailure,
       isAutoRunTimerParkedError,
       isPhoneSmsPlatformRateLimitFailure,
@@ -833,9 +833,6 @@
               && isAddPhoneAuthFailure(err);
             const blockedByPlusNonFreeTrial = typeof isPlusCheckoutNonFreeTrialFailure === 'function'
               && isPlusCheckoutNonFreeTrialFailure(err);
-            const blockedByGpcPageFlowEnded = typeof isGpcPageFlowEndedFailure === 'function'
-              ? isGpcPageFlowEndedFailure(err)
-              : /GPC_PAGE_FLOW_ENDED::/i.test(err?.message || String(err || ''));
             const blockedBySignupUserAlreadyExists = typeof isSignupUserAlreadyExistsFailure === 'function'
               && !keepSameEmailUntilAddPhone
               && isSignupUserAlreadyExistsFailure(err);
@@ -843,13 +840,15 @@
               && isStep4Route405RecoveryLimitFailure(err);
             const blockedByKiroProxy = typeof isKiroProxyFailure === 'function'
               && isKiroProxyFailure(err);
+            const blockedByDuckDdgDailyLimit = typeof isDuckDdgDailyLimitFailure === 'function'
+              && isDuckDdgDailyLimitFailure(err);
             const canRetry = !blockedByAddPhone
               && !blockedByPhoneNoSupply
               && !blockedByPlusNonFreeTrial
-              && !blockedByGpcPageFlowEnded
               && !blockedBySignupUserAlreadyExists
               && !blockedByStep4Route405
               && !blockedByKiroProxy
+              && !blockedByDuckDdgDailyLimit
               && autoRunSkipFailures
               && attemptRun < maxAttemptsForRound;
 
@@ -962,41 +961,6 @@
               break;
             }
 
-            if (blockedByGpcPageFlowEnded) {
-              roundSummary.status = 'failed';
-              roundSummary.finalFailureReason = reason;
-              await setState({
-                autoRunRoundSummaries: serializeAutoRunRoundSummaries(totalRuns, roundSummaries),
-              });
-              await appendRoundRecord('failed', reason, err);
-              cancelPendingCommands('当前轮因 GPC 页面流程已结束。');
-              await broadcastStopToContentScripts();
-              if (!autoRunSkipFailures) {
-                await addLog(
-                  `第 ${targetRun}/${totalRuns} 轮 GPC 页面流程已结束，自动重试未开启，当前自动运行将停止。`,
-                  'warn'
-                );
-                stoppedEarly = true;
-                await broadcastAutoRunStatus('stopped', {
-                  currentRun: targetRun,
-                  totalRuns,
-                  attemptRun,
-                  sessionId: 0,
-                });
-                break;
-              }
-
-              await addLog(`第 ${targetRun}/${totalRuns} 轮 GPC 页面流程已结束，本轮将直接失败并跳过剩余重试。`, 'warn');
-              await addLog(
-                targetRun < totalRuns
-                  ? `第 ${targetRun}/${totalRuns} 轮因 GPC 页面流程结束提前结束，自动流程将继续下一轮。`
-                  : `第 ${targetRun}/${totalRuns} 轮因 GPC 页面流程结束提前结束，已无后续轮次，本次自动运行结束。`,
-                'warn'
-              );
-              forceFreshTabsNextRun = true;
-              break;
-            }
-
             if (blockedBySignupUserAlreadyExists) {
               roundSummary.status = 'failed';
               roundSummary.finalFailureReason = reason;
@@ -1078,6 +1042,27 @@
               await broadcastStopToContentScripts();
               await addLog(`第 ${targetRun}/${totalRuns} 轮检测到 Kiro 代理异常页：${reason}`, 'error');
               await addLog('当前代理可能不可用，请先切换代理后再继续。自动运行已停止。', 'warn');
+              stoppedEarly = true;
+              await broadcastAutoRunStatus('stopped', {
+                currentRun: targetRun,
+                totalRuns,
+                attemptRun,
+                sessionId: 0,
+              });
+              break;
+            }
+
+            if (blockedByDuckDdgDailyLimit) {
+              roundSummary.status = 'failed';
+              roundSummary.finalFailureReason = reason;
+              await setState({
+                autoRunRoundSummaries: serializeAutoRunRoundSummaries(totalRuns, roundSummaries),
+              });
+              await appendRoundRecord('failed', reason, err);
+              cancelPendingCommands('当前轮检测到 DuckDuckGo 地址生成每日限制，已停止自动运行。');
+              await broadcastStopToContentScripts();
+              await addLog(`第 ${targetRun}/${totalRuns} 轮检测到 DuckDuckGo 地址生成每日限制：${reason}`, 'error');
+              await addLog('DuckDuckGo 地址生成已达到每日限制，自动运行已停止，避免继续消耗测试次数。', 'warn');
               stoppedEarly = true;
               await broadcastAutoRunStatus('stopped', {
                 currentRun: targetRun,

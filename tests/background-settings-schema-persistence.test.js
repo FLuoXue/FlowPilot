@@ -9,6 +9,22 @@ const backgroundSource = fs.readFileSync('background.js', 'utf8');
 const DEFAULT_MADAO_BASE_URL_FOR_TEST = 'http://127.0.0.1:7822';
 const DEFAULT_MADAO_MODE_FOR_TEST = 'routing_plan';
 
+test('background persistable defaults include empty Grok SUB2API group policy fields', () => {
+  const start = backgroundSource.indexOf('const PERSISTED_SETTING_DEFAULTS = {');
+  const end = backgroundSource.indexOf('const PERSISTED_SETTING_KEYS', start);
+  assert.ok(start >= 0 && end > start, 'missing PERSISTED_SETTING_DEFAULTS block');
+  const defaultsBlock = backgroundSource.slice(start, end);
+
+  assert.match(defaultsBlock, /grokSub2apiGroupName:\s*'',/);
+  assert.match(defaultsBlock, /grokSub2apiGroupNames:\s*\[\],/);
+  assert.match(defaultsBlock, /grokSub2apiAccountPriority:\s*DEFAULT_SUB2API_ACCOUNT_PRIORITY,/);
+  assert.match(defaultsBlock, /grokSub2apiDefaultProxyName:\s*'',/);
+  assert.match(defaultsBlock, /grok2ApiUrl:\s*'',/);
+  assert.match(defaultsBlock, /grok2ApiAdminKey:\s*'',/);
+  assert.match(defaultsBlock, /grokSub2apiGrok2ApiUploadEnabled:\s*false,/);
+  assert.doesNotMatch(defaultsBlock, /grokSub2apiWebchat2ApiUploadEnabled:/);
+});
+
 function extractFunction(name) {
   const markers = [`async function ${name}(`, `function ${name}(`];
   const start = markers
@@ -58,10 +74,19 @@ function buildHarness(extra = '') {
 const self = {};
 ${flowRegistrySource}
 ${settingsSchemaSource}
+const normalizeLanguageSettingForTest = (value = 'auto') => {
+  const normalized = String(value || '').trim().replace(/_/g, '-').toLowerCase();
+  if (normalized === 'auto') return 'auto';
+  if (normalized === 'en' || normalized.startsWith('en-')) return 'en-US';
+  if (normalized === 'zh' || normalized.startsWith('zh-')) return 'zh-CN';
+  return 'auto';
+};
+self.FlowPilotI18n = { normalizeLanguageSetting: normalizeLanguageSettingForTest };
 const DEFAULT_ACTIVE_FLOW_ID = 'openai';
 const DEFAULT_SUB2API_GROUP_NAMES = ['codex', 'openai-plus'];
 const SETTINGS_SCHEMA_VIEW_KEYS = Object.freeze([
   'activeFlowId',
+  'uiLanguage',
   'targetId',
   'vpsUrl',
   'vpsPassword',
@@ -73,6 +98,13 @@ const SETTINGS_SCHEMA_VIEW_KEYS = Object.freeze([
   'sub2apiGroupNames',
   'sub2apiAccountPriority',
   'sub2apiDefaultProxyName',
+  'grokSub2apiGroupName',
+  'grokSub2apiGroupNames',
+  'grokSub2apiAccountPriority',
+  'grokSub2apiDefaultProxyName',
+  'grok2ApiUrl',
+  'grok2ApiAdminKey',
+  'grokSub2apiGrok2ApiUploadEnabled',
   'codex2apiUrl',
   'codex2apiAdminKey',
   'customPassword',
@@ -93,17 +125,20 @@ const SETTINGS_SCHEMA_VIEW_KEYS = Object.freeze([
   'openaiWebchatUrl',
   'openaiWebchatAdminKey',
   'openaiWebchatUploadEnabled',
+  'openaiChatgpt2ApiUrl',
+  'openaiChatgpt2ApiAdminKey',
   'stepExecutionRangeByFlow',
 ]);
 const SETTINGS_SCHEMA_VIEW_KEY_SET = new Set(SETTINGS_SCHEMA_VIEW_KEYS);
 const DEFAULT_MADAO_BASE_URL = 'http://127.0.0.1:7822';
 const DEFAULT_MADAO_MODE = 'routing_plan';
 const PERSISTED_SETTING_DEFAULTS = {
+  uiLanguage: 'auto',
   activeFlowId: DEFAULT_ACTIVE_FLOW_ID,
   targetId: 'cpa',
   signupMethod: 'email',
   plusModeEnabled: false,
-  plusPaymentMethod: 'gpc-helper',
+  plusPaymentMethod: 'paypal',
   plusAccountAccessStrategy: 'oauth',
   phoneVerificationEnabled: false,
   mailProvider: '163',
@@ -114,6 +149,9 @@ const PERSISTED_SETTING_DEFAULTS = {
   ipProxyMode: 'account',
   kiroRsUrl: '',
   kiroRsKey: '',
+  grok2ApiUrl: '',
+  grok2ApiAdminKey: '',
+  grokSub2apiGrok2ApiUploadEnabled: false,
   openaiWebchatUrl: '',
   openaiWebchatAdminKey: '',
   openaiWebchatUploadEnabled: false,
@@ -121,6 +159,13 @@ const PERSISTED_SETTING_DEFAULTS = {
   openaiWebchatUploadedAt: 0,
   openaiWebchatUploadMessage: '',
   openaiWebchatTargetUrl: '',
+  openaiChatgpt2ApiUrl: '',
+  openaiChatgpt2ApiAdminKey: '',
+  openaiChatgpt2ApiUploadStatus: '',
+  openaiChatgpt2ApiUploadedAt: 0,
+  openaiChatgpt2ApiUploadMessage: '',
+  openaiChatgpt2ApiTargetUrl: '',
+  duckDdgToken: '',
   phoneSmsProvider: 'hero-sms',
   madaoBaseUrl: DEFAULT_MADAO_BASE_URL,
   madaoHttpSecret: '',
@@ -139,6 +184,7 @@ const PERSISTED_SETTING_KEYS = Object.keys(PERSISTED_SETTING_DEFAULTS);
 const PERSISTED_SETTINGS_SCHEMA_KEYS = ['settingsSchemaVersion', 'settingsState'];
 const LEGACY_AUTO_STEP_DELAY_KEYS = [];
 const LEGACY_VERIFICATION_RESEND_COUNT_KEYS = [];
+const LEGACY_GROK_SUB2API_UPLOAD_KEYS = ['grokSub2apiWebchat2ApiUploadEnabled'];
 const PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH = 'oauth';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_SUB2API_CODEX_SESSION = 'sub2api_codex_session';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_CPA_CODEX_SESSION = 'cpa_codex_session';
@@ -155,7 +201,7 @@ function normalizeSignupMethod(value = '') {
 }
 function normalizePlusPaymentMethod(value = '') {
   const normalized = String(value || '').trim().toLowerCase();
-  return normalized === 'gpc-helper' ? normalized : 'paypal';
+  return normalized === 'paypal-hosted' || normalized === 'none' ? normalized : 'paypal';
 }
 ${extractFunction('normalizePlusAccountAccessStrategy')}
 function normalizeSub2ApiGroupNames(value) {
@@ -166,6 +212,11 @@ function normalizeCloudflareTempEmailDomains(value) { return Array.isArray(value
 function normalizeCloudMailDomains(value) { return Array.isArray(value) ? value : []; }
 function normalizeMailProvider(value = '') { return String(value || '163').trim().toLowerCase() || '163'; }
 function normalizeCustomMailReceiveMode(value = '') { return String(value || '').trim().toLowerCase() === 'helper' ? 'helper' : 'manual'; }
+function normalizeDuckDdgToken(value = '') {
+  const trimmed = String(value || '').trim().replace(/^["']|["']$/g, '');
+  const bearerMatch = trimmed.match(/^Bearer\\s+(.+)$/i);
+  return (bearerMatch ? bearerMatch[1] : trimmed).trim();
+}
 function normalizeCustomMailHelperBaseUrl(value = '') {
   const trimmed = String(value || '').trim();
   const candidate = trimmed || 'http://127.0.0.1:17374';
@@ -307,20 +358,26 @@ test('buildPersistentSettingsPayload writes canonical settings schema into persi
 
   const payload = api.buildPersistentSettingsPayload({
     activeFlowId: 'kiro',
+    uiLanguage: 'en',
     kiroRsUrl: 'https://kiro.example.com/admin',
     kiroRsKey: 'secret-key',
     openaiWebchatUrl: ' https://webchat.example.com/admin ',
     openaiWebchatAdminKey: ' webchat-key ',
     openaiWebchatUploadEnabled: true,
+    openaiChatgpt2ApiUrl: ' https://chatgpt2api.example.com/admin ',
+    openaiChatgpt2ApiAdminKey: ' chatgpt2api-key ',
   }, { fillDefaults: true });
 
   assert.equal(payload.activeFlowId, 'kiro');
+  assert.equal(payload.uiLanguage, 'en-US');
   assert.equal(payload.targetId, 'kiro-rs');
   assert.equal(payload.kiroRsUrl, 'https://kiro.example.com/admin');
   assert.equal(payload.kiroRsKey, 'secret-key');
   assert.equal(payload.openaiWebchatUrl, 'https://webchat.example.com/admin');
   assert.equal(payload.openaiWebchatAdminKey, 'webchat-key');
   assert.equal(payload.openaiWebchatUploadEnabled, false);
+  assert.equal(payload.openaiChatgpt2ApiUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(payload.openaiChatgpt2ApiAdminKey, 'chatgpt2api-key');
   assert.equal(payload.phoneSmsProvider, 'hero-sms');
   assert.equal(payload.madaoBaseUrl, DEFAULT_MADAO_BASE_URL_FOR_TEST);
   assert.equal(payload.madaoMode, DEFAULT_MADAO_MODE_FOR_TEST);
@@ -330,14 +387,33 @@ test('buildPersistentSettingsPayload writes canonical settings schema into persi
   assert.equal(Object.prototype.hasOwnProperty.call(payload, 'kiroRegion'), false);
   assert.equal(payload.settingsSchemaVersion, 5);
   assert.equal(payload.settingsState.activeFlowId, 'kiro');
+  assert.equal(payload.settingsState.ui.language, 'en-US');
   assert.equal(payload.settingsState.flows.kiro.selectedTargetId, 'kiro-rs');
   assert.equal(payload.settingsState.flows.openai.targets.webchat.baseUrl, 'https://webchat.example.com/admin');
   assert.equal(payload.settingsState.flows.openai.targets.webchat.apiKey, 'webchat-key');
+  assert.equal(payload.settingsState.flows.openai.targets.chatgpt2api.baseUrl, 'https://chatgpt2api.example.com/admin');
+  assert.equal(payload.settingsState.flows.openai.targets.chatgpt2api.apiKey, 'chatgpt2api-key');
   assert.equal(payload.settingsState.flows.openai.webchatUpload.enabled, false);
   assert.equal(
     payload.settingsState.flows.kiro.targets['kiro-rs'].baseUrl,
     'https://kiro.example.com/admin'
   );
+});
+
+test('buildPersistentSettingsPayload lets explicit flat language override existing nested language', () => {
+  const api = buildHarness();
+
+  const payload = api.buildPersistentSettingsPayload({
+    uiLanguage: 'en',
+    settingsState: {
+      ui: {
+        language: 'auto',
+      },
+    },
+  }, { fillDefaults: true });
+
+  assert.equal(payload.uiLanguage, 'en-US');
+  assert.equal(payload.settingsState.ui.language, 'en-US');
 });
 
 test('buildPersistentSettingsPayload accepts schema-only input when requireKnownKeys is enabled', () => {
@@ -347,6 +423,9 @@ test('buildPersistentSettingsPayload accepts schema-only input when requireKnown
     settingsSchemaVersion: 5,
     settingsState: {
       activeFlowId: 'kiro',
+      ui: {
+        language: 'en-US',
+      },
       services: {
         account: { customPassword: '' },
         email: { provider: '163' },
@@ -406,11 +485,13 @@ test('buildPersistentSettingsPayload accepts schema-only input when requireKnown
   }, { requireKnownKeys: true });
 
   assert.equal(payload.activeFlowId, 'kiro');
+  assert.equal(payload.uiLanguage, 'en-US');
   assert.equal(payload.targetId, 'kiro-rs');
   assert.equal(payload.kiroRsUrl, 'https://kiro.example.com/admin');
   assert.equal(payload.kiroRsKey, 'schema-only-key');
   assert.equal(Object.prototype.hasOwnProperty.call(payload, 'kiroRegion'), false);
   assert.equal(payload.settingsSchemaVersion, 5);
+  assert.equal(payload.settingsState.ui.language, 'en-US');
   assert.equal(payload.settingsState.flows.openai.plus.plusAccountAccessStrategy, 'oauth');
 });
 
@@ -441,6 +522,31 @@ function getRequestedKeys() {
   assert.equal(state.settingsState.activeFlowId, 'openai');
   assert.ok(api.getRequestedKeys().includes('madaoBaseUrl'));
   assert.ok(api.getRequestedKeys().includes('madaoMode'));
+  assert.ok(api.getRequestedKeys().includes('grokSub2apiWebchat2ApiUploadEnabled'));
+});
+
+test('getPersistedSettings migrates the retired Grok SUB2API webchat switch', async () => {
+  const api = buildHarness(`
+const chrome = {
+  storage: {
+    local: {
+      async get() {
+        return { grokSub2apiWebchat2ApiUploadEnabled: true };
+      },
+    },
+  },
+};
+`);
+
+  const state = await api.getPersistedSettings();
+
+  assert.equal(state.grokSub2apiGrok2ApiUploadEnabled, true);
+  assert.equal(state.settingsState.flows.grok.targets.sub2api.grok2apiUploadEnabled, true);
+  assert.equal(Object.hasOwn(state, 'grokSub2apiWebchat2ApiUploadEnabled'), false);
+  assert.equal(
+    Object.hasOwn(state.settingsState.flows.grok.targets.sub2api, 'webchat2apiUploadEnabled'),
+    false
+  );
 });
 
 test('getPersistedSettings can project schema-only storage back into legacy flat settings', async () => {
@@ -692,6 +798,57 @@ function getRemovedKeys() {
   assert.equal(Object.prototype.hasOwnProperty.call(write, 'mailProvider'), false);
 });
 
+test('setPersistentSettings mirrors flat ui language updates into canonical settingsState', async () => {
+  const api = buildHarness(`
+const persistedWrites = [];
+const removedKeys = [];
+const chrome = {
+  storage: {
+    local: {
+      async get() {
+        return {
+          settingsSchemaVersion: 5,
+          settingsState: {
+            activeFlowId: 'openai',
+            ui: {
+              language: 'auto',
+            },
+            services: {
+              account: { customPassword: '' },
+              email: { provider: '163' },
+              proxy: { enabled: false, provider: '711proxy', mode: 'account' },
+            },
+            flows: {},
+          },
+        };
+      },
+      async remove(keys) {
+        removedKeys.push(...(Array.isArray(keys) ? keys : [keys]));
+      },
+      async set(payload) {
+        persistedWrites.push(JSON.parse(JSON.stringify(payload)));
+      },
+    },
+  },
+};
+function getPersistedWrites() {
+  return persistedWrites;
+}
+function getRemovedKeys() {
+  return removedKeys;
+}
+`);
+
+  const persisted = await api.setPersistentSettings({
+    uiLanguage: 'en',
+  });
+  const write = api.getPersistedWrites().at(-1);
+
+  assert.equal(persisted.uiLanguage, 'en-US');
+  assert.equal(persisted.settingsState.ui.language, 'en-US');
+  assert.equal(write.settingsState.ui.language, 'en-US');
+});
+
 test('setPersistentSettings mirrors custom mail helper mode into canonical email settings', async () => {
   const api = buildHarness(`
 const persistedWrites = [];
@@ -733,6 +890,17 @@ function getRemovedKeys() {
   assert.equal(write.settingsState.services.email.customReceiveMode, 'helper');
   assert.equal(write.settingsState.services.email.customHelperBaseUrl, 'http://127.0.0.1:17374');
   assert.equal(Object.prototype.hasOwnProperty.call(write, 'customMailReceiveMode'), false);
+});
+
+test('buildPersistentSettingsPayload keeps Duck DDG token in flat persisted settings', () => {
+  const api = buildHarness();
+
+  const payload = api.buildPersistentSettingsPayload({
+    duckDdgToken: 'Bearer ddg-token-for-test',
+  }, { fillDefaults: true });
+
+  assert.equal(payload.duckDdgToken, 'ddg-token-for-test');
+  assert.equal(Object.prototype.hasOwnProperty.call(payload.settingsState.services.email, 'duckDdgToken'), false);
 });
 
 test('buildPersistentSettingsPayload persists normalized MaDao flat settings outside canonical settingsState', () => {
@@ -780,6 +948,9 @@ const chrome = {
           settingsSchemaVersion: 5,
           settingsState: {
             activeFlowId: 'openai',
+            ui: {
+              language: 'en-US',
+            },
             services: {
               account: { customPassword: 'old-password' },
               email: { provider: '163' },
@@ -870,11 +1041,14 @@ function getRemovedKeys() {
   assert.equal(persisted.mailProvider, 'cloudflare-temp-email');
   assert.equal(persisted.ipProxyEnabled, true);
   assert.equal(persisted.ipProxyMode, 'api');
+  assert.equal(persisted.uiLanguage, 'en-US');
+  assert.equal(persisted.settingsState.ui.language, 'en-US');
   assert.deepEqual(persisted.stepExecutionRangeByFlow.openai, {
     enabled: true,
     fromStep: 2,
     toStep: 4,
   });
+  assert.equal(write.settingsState.ui.language, 'en-US');
   assert.equal(write.settingsState.flows.openai.selectedTargetId, 'sub2api');
   assert.equal(write.settingsState.services.email.provider, 'cloudflare-temp-email');
   assert.equal(write.settingsState.services.proxy.enabled, true);
@@ -890,6 +1064,52 @@ function getRemovedKeys() {
   assert.equal(Object.prototype.hasOwnProperty.call(write, 'mailProvider'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(write, 'panelMode'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(write, 'ipProxyMode'), false);
+});
+
+test('setPersistentSettings mirrors shared SUB2API credentials and isolated Grok policy', async () => {
+  const api = buildHarness(`
+const persistedWrites = [];
+const chrome = {
+  storage: {
+    local: {
+      async get() { return {}; },
+      async remove() {},
+      async set(payload) { persistedWrites.push(JSON.parse(JSON.stringify(payload))); },
+    },
+  },
+};
+function getPersistedWrites() { return persistedWrites; }
+`);
+
+  await api.setPersistentSettings({
+    activeFlowId: 'grok',
+    targetId: 'sub2api',
+    sub2apiUrl: 'https://sub2api.example.com/admin/accounts',
+    sub2apiEmail: 'owner@example.com',
+    sub2apiPassword: 'shared-secret',
+    grokSub2apiGroupName: 'grok-pool',
+    grokSub2apiGroupNames: ['grok-default', 'grok-pool'],
+    grokSub2apiAccountPriority: 3,
+    grokSub2apiDefaultProxyName: 'xai-proxy',
+    grok2ApiUrl: 'https://grok2api.example.com/admin/account',
+    grok2ApiAdminKey: 'grok2api-key',
+    grokSub2apiGrok2ApiUploadEnabled: true,
+  });
+  const settingsState = api.getPersistedWrites().at(-1).settingsState;
+
+  assert.equal(settingsState.flows.grok.selectedTargetId, 'sub2api');
+  assert.equal(settingsState.flows.openai.targets.sub2api.sub2apiUrl, 'https://sub2api.example.com/admin/accounts');
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiUrl, 'https://sub2api.example.com/admin/accounts');
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiEmail, 'owner@example.com');
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiPassword, 'shared-secret');
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiGroupName, 'grok-pool');
+  assert.deepEqual(settingsState.flows.grok.targets.sub2api.sub2apiGroupNames, ['grok-default', 'grok-pool']);
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiAccountPriority, 3);
+  assert.equal(settingsState.flows.grok.targets.sub2api.sub2apiDefaultProxyName, 'xai-proxy');
+  assert.equal(settingsState.flows.grok.targets.grok2api.baseUrl, 'https://grok2api.example.com/admin/account');
+  assert.equal(settingsState.flows.grok.targets.grok2api.apiKey, 'grok2api-key');
+  assert.equal(settingsState.flows.grok.targets.sub2api.grok2apiUploadEnabled, true);
+  assert.equal(Object.hasOwn(settingsState.flows.grok.targets.sub2api, 'webchat2apiUploadEnabled'), false);
 });
 
 test('setPersistentSettings replace mode does not retain previous non-schema settings', async () => {

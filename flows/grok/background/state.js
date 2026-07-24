@@ -83,6 +83,17 @@
     ));
   }
 
+  function normalizePositiveIds(values = []) {
+    if (!Array.isArray(values)) {
+      return [];
+    }
+    return Array.from(new Set(
+      values
+        .map((value) => normalizeInteger(value))
+        .filter((value) => value > 0)
+    ));
+  }
+
   function buildDefaultRuntimeState() {
     return {
       session: {
@@ -108,10 +119,23 @@
         extractedAt: 0,
       },
       upload: {
+        targetId: '',
         status: '',
         uploadedAt: 0,
         message: '',
         targetUrl: '',
+      },
+      oauth: {
+        sessionId: '',
+        state: '',
+        authUrl: '',
+        authTabId: null,
+        proxyId: null,
+        groupIds: [],
+        status: '',
+        startedAt: 0,
+        completedAt: 0,
+        lastError: '',
       },
     };
   }
@@ -142,10 +166,23 @@
         extractedAt: Math.max(0, normalizeInteger(merged.sso?.extractedAt)),
       },
       upload: {
+        targetId: cleanString(merged.upload?.targetId),
         status: cleanString(merged.upload?.status),
         uploadedAt: Math.max(0, normalizeInteger(merged.upload?.uploadedAt)),
         message: cleanString(merged.upload?.message),
         targetUrl: cleanString(merged.upload?.targetUrl),
+      },
+      oauth: {
+        sessionId: cleanString(merged.oauth?.sessionId),
+        state: cleanString(merged.oauth?.state),
+        authUrl: cleanString(merged.oauth?.authUrl),
+        authTabId: normalizeNullableInteger(merged.oauth?.authTabId),
+        proxyId: normalizeNullableInteger(merged.oauth?.proxyId),
+        groupIds: normalizePositiveIds(merged.oauth?.groupIds),
+        status: cleanString(merged.oauth?.status),
+        startedAt: Math.max(0, normalizeInteger(merged.oauth?.startedAt)),
+        completedAt: Math.max(0, normalizeInteger(merged.oauth?.completedAt)),
+        lastError: cleanString(merged.oauth?.lastError),
       },
     };
   }
@@ -203,6 +240,7 @@
       register: {},
       sso: {},
       upload: {},
+      oauth: {},
     };
     assignPositiveInteger(flatRuntime.session, 'registerTabId', state.grokRegisterTabId);
     assignCleanString(flatRuntime.session, 'pageState', state.grokPageState);
@@ -222,7 +260,7 @@
     assignPositiveInteger(flatRuntime.upload, 'uploadedAt', state.grokWebchat2ApiUploadedAt);
     assignCleanString(flatRuntime.upload, 'message', state.grokWebchat2ApiUploadMessage);
     assignCleanString(flatRuntime.upload, 'targetUrl', state.grokWebchat2ApiTargetUrl);
-    return normalizeRuntimeState(deepMerge(deepMerge(runtimeFlowState.grok || {}, legacyFlowState), flatRuntime));
+    return normalizeRuntimeState(deepMerge(deepMerge(flatRuntime, legacyFlowState), runtimeFlowState.grok || {}));
   }
 
   function buildStateView(state = {}) {
@@ -297,6 +335,16 @@
     return buildRuntimeStatePatch(currentState, {
       ...currentRuntimeState,
       sso: buildDefaultRuntimeState().sso,
+      upload: buildDefaultRuntimeState().upload,
+      oauth: buildDefaultRuntimeState().oauth,
+    });
+  }
+
+  function buildOauthResetPatch(currentState = {}) {
+    const currentRuntimeState = ensureRuntimeState(currentState);
+    return buildRuntimeStatePatch(currentState, {
+      ...currentRuntimeState,
+      oauth: buildDefaultRuntimeState().oauth,
     });
   }
 
@@ -316,6 +364,10 @@
       case 'grok-submit-profile':
       case 'grok-extract-sso-cookie':
         return buildSsoResetPatch(currentState);
+      case 'grok-upload-sso-to-webchat2api':
+      case 'grok-upload-sso-to-grok2api':
+      case 'grok-start-sub2api-oauth':
+        return buildOauthResetPatch(currentState);
       default:
         return {};
     }

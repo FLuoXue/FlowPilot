@@ -379,6 +379,39 @@ header {
   cursor: not-allowed;
 }
 
+.header-dropdown-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-dropdown-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-dropdown-select {
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-field);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.header-dropdown-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
 /* ============================================================
    Buttons
    ============================================================ */
@@ -934,16 +967,6 @@ header {
   min-width: 0;
 }
 
-.gpc-card-key-inline > .input-with-icon {
-  flex: 0 1 376px;
-  max-width: 376px;
-}
-
-.gpc-card-key-inline > .data-value {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
 .ip-proxy-fold-row {
   display: block;
 }
@@ -1295,9 +1318,12 @@ header {
 #row-codex2api-admin-key .data-label,
 #row-grok-webchat2api-url .data-label,
 #row-grok-webchat2api-key .data-label,
+#row-grok-sub2api-group .data-label,
+#row-grok-sub2api-account-priority .data-label,
+#row-grok-sub2api-default-proxy .data-label,
 #row-grok-register-status .data-label,
 #row-grok-sso-status .data-label,
-#row-grok-webchat2api-upload-status .data-label,
+#row-grok-upload-status .data-label,
 #row-grok-sso-settings .data-label {
   font-size: 10px;
   letter-spacing: 0.02em;

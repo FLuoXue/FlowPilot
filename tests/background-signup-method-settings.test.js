@@ -144,7 +144,6 @@ test('background step definitions resolve titles from the frozen signup method',
 const api = new Function(`
 const captured = [];
 const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal';
-const PLUS_PAYMENT_METHOD_GPC_HELPER = 'gpc-helper';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH = 'oauth';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_SUB2API_CODEX_SESSION = 'sub2api_codex_session';
 const PLUS_ACCOUNT_ACCESS_STRATEGY_CPA_CODEX_SESSION = 'cpa_codex_session';
@@ -175,7 +174,7 @@ return {
 `)();
 
   const steps = api.getStepDefinitionsForState({
-    plusModeEnabled: true,
+    plusModeEnabled: false,
     plusPaymentMethod: 'gopay',
     signupMethod: 'email',
     resolvedSignupMethod: 'phone',
@@ -183,12 +182,58 @@ return {
 
   assert.deepEqual(api.getCaptured(), [{
     activeFlowId: 'openai',
-    plusModeEnabled: true,
+    targetId: undefined,
+    plusModeEnabled: false,
     plusPaymentMethod: 'paypal',
     plusAccountAccessStrategy: 'oauth',
     signupMethod: 'phone',
     phoneVerificationEnabled: false,
     phoneSignupReloginAfterBindEmailEnabled: false,
+    grokSub2apiGrok2ApiUploadEnabled: false,
   }]);
   assert.equal(steps[0].title, '注册并输入手机号');
+});
+
+test('background step definitions forward the resolved Grok target to workflow selection', () => {
+const api = new Function(`
+const captured = [];
+const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal';
+const PLUS_ACCOUNT_ACCESS_STRATEGY_OAUTH = 'oauth';
+const PLUS_ACCOUNT_ACCESS_STRATEGY_SUB2API_CODEX_SESSION = 'sub2api_codex_session';
+const PLUS_ACCOUNT_ACCESS_STRATEGY_CPA_CODEX_SESSION = 'cpa_codex_session';
+const DEFAULT_ACTIVE_FLOW_ID = 'openai';
+const self = {
+  MultiPageStepDefinitions: {
+    getSteps(options) {
+      captured.push(options);
+      return [{
+        id: 6,
+        key: options.targetId === 'sub2api'
+          ? 'grok-complete-sub2api-oauth'
+          : 'grok-upload-sso-to-webchat2api',
+      }];
+    },
+  },
+};
+${extractFunction('isPlusModeState')}
+${extractFunction('normalizePlusPaymentMethod')}
+${extractFunction('normalizePlusAccountAccessStrategy')}
+${extractFunction('normalizeSignupMethod')}
+${extractFunction('getSignupMethodForStepDefinitions')}
+${extractFunction('buildResolvedStepDefinitionState')}
+${extractFunction('getStepDefinitionsForState')}
+return {
+  getCaptured: () => captured.slice(),
+  getStepDefinitionsForState,
+};
+`)();
+
+  const steps = api.getStepDefinitionsForState({
+    activeFlowId: 'grok',
+    flowId: 'grok',
+    targetId: 'sub2api',
+  });
+
+  assert.equal(api.getCaptured()[0].targetId, 'sub2api');
+  assert.equal(steps.at(-1)?.key, 'grok-complete-sub2api-oauth');
 });

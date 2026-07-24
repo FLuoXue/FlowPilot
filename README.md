@@ -31,9 +31,7 @@
 ## 主要功能
 
 - 支持普通注册授权链路，既可以单步执行，也可以整套 `Auto` 执行。
-- 支持 Plus 模式，覆盖 `PayPal`、`无卡直绑`、`GPC` 与 `无需支付` 链路。
-- 支持 `账号接入策略`，可以在 Plus 模式下按来源选择继续走 `OAuth`，或直接导入当前 ChatGPT 已登录会话。
-- 支持 `CPA`、`SUB2API`、`Codex2API` 三种 OpenAI 来源，以及独立的 `Kiro` flow。
+- 支持 `CPA`、`SUB2API`、`Codex2API` 三种 OpenAI 来源，以及独立的 `Kiro` 和 `Grok` flow。
 - 支持邮箱注册、验证码收取、登录验证码处理、OAuth 同意页确认和平台侧账号创建。
 - 支持 `Hotmail`、`2925`、`QQ Mail`、`163 Mail`、`163 VIP Mail`、`126 Mail`、`Inbucket`、`Cloud Mail`、`YYDS Mail`、`iCloud` 等收码方式。
 - 支持 `DuckDuckGo`、`Cloudflare`、`自定义邮箱池`、`自定义邮箱服务号池`、`Gmail / 2925 别名邮箱` 等注册邮箱生成方式。
@@ -53,6 +51,9 @@
 
 - `Kiro`
   独立的 Builder ID 注册、桌面授权和 `kiro.rs` 上传链路，不复用 OpenAI 的 Plus 和平台接入逻辑。
+
+- `Grok`
+  独立的 xAI 注册链路。选择 `webchat2api` 时提取并上传 SSO；选择 `grok2api` 时将 SSO 上传到固定的 `pool: auto` 账号池；选择 `SUB2API` 时使用 SUB2API 官方 OAuth 自动完成授权和账号创建，也可开启双发布，先上传到 `grok2api` 再继续 OAuth。Grok 注册邮箱固定作为创建到 `SUB2API` 的账号名称。
 
 ## Plus 模式
 

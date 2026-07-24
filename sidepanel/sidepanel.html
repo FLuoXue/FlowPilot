@@ -42,10 +42,20 @@
       <button id="btn-theme" class="btn btn-ghost btn-sm header-theme-btn" title="切换主题">主题</button>
       <div id="config-menu-shell" class="header-menu">
         <button id="btn-config-menu" class="btn btn-ghost btn-sm header-config-btn" type="button" aria-haspopup="menu"
-          aria-expanded="false">配置</button>
+          aria-expanded="false" data-i18n="sidepanel.config.menu">配置</button>
         <div id="config-menu" class="header-dropdown" role="menu" aria-labelledby="btn-config-menu" hidden>
-          <button id="btn-export-settings" class="header-dropdown-item" type="button" role="menuitem">导出配置</button>
-          <button id="btn-import-settings" class="header-dropdown-item" type="button" role="menuitem">导入配置</button>
+          <label class="header-dropdown-field">
+            <span class="header-dropdown-label" data-i18n="sidepanel.language.label">语言</span>
+            <select id="select-ui-language" class="header-dropdown-select" aria-label="语言">
+              <option value="auto" data-i18n="sidepanel.language.auto">自动</option>
+              <option value="zh-CN" data-i18n="sidepanel.language.zh-CN">中文</option>
+              <option value="en-US" data-i18n="sidepanel.language.en-US">English</option>
+            </select>
+          </label>
+          <button id="btn-export-settings" class="header-dropdown-item" type="button" role="menuitem"
+            data-i18n="sidepanel.config.export">导出配置</button>
+          <button id="btn-import-settings" class="header-dropdown-item" type="button" role="menuitem"
+            data-i18n="sidepanel.config.import">导入配置</button>
         </div>
       </div>
     </div>
@@ -136,6 +146,19 @@
             data-hide-label="隐藏 SUB2API 密码" aria-label="显示 SUB2API 密码" title="显示 SUB2API 密码"></button>
         </div>
       </div>
+      <div class="data-row" id="row-grok-sub2api-grok2api-upload" style="display:none;">
+        <span class="data-label">双发布</span>
+        <div class="data-inline">
+          <label class="toggle-switch" for="input-grok-sub2api-grok2api-upload-enabled"
+            title="开启后先上传到 grok2api，再完成 SUB2API OAuth 创建">
+            <input type="checkbox" id="input-grok-sub2api-grok2api-upload-enabled" />
+            <span class="toggle-switch-track" aria-hidden="true">
+              <span class="toggle-switch-thumb"></span>
+            </span>
+          </label>
+          <span class="data-value">同时上传到 grok2api</span>
+        </div>
+      </div>
       <div class="data-row" id="row-sub2api-group" style="display:none;">
         <span class="data-label">分组</span>
         <div class="data-inline">
@@ -158,6 +181,29 @@
       <div class="data-row" id="row-sub2api-default-proxy" style="display:none;">
         <span class="data-label">默认代理</span>
         <input type="text" id="input-sub2api-default-proxy" class="data-input" placeholder="留空则不使用代理；或填写代理名称 / ID" />
+      </div>
+      <div class="data-row" id="row-grok-sub2api-group" style="display:none;">
+        <span class="data-label">分组</span>
+        <div class="data-inline">
+          <input type="hidden" id="input-grok-sub2api-group" value="" />
+          <div id="grok-sub2api-group-picker" class="editable-list-picker">
+            <button id="btn-grok-sub2api-group-menu" class="data-select editable-list-trigger" type="button"
+              aria-haspopup="listbox" aria-expanded="false">
+              <span id="grok-sub2api-group-current" class="truncate">请先添加分组</span>
+              <span class="editable-list-caret" aria-hidden="true"></span>
+            </button>
+            <div id="grok-sub2api-group-menu" class="editable-list-menu" role="listbox" hidden></div>
+          </div>
+          <button id="btn-add-grok-sub2api-group" class="btn btn-outline btn-sm data-inline-btn" type="button">添加</button>
+        </div>
+      </div>
+      <div class="data-row" id="row-grok-sub2api-account-priority" style="display:none;">
+        <span class="data-label">优先级</span>
+        <input type="number" id="input-grok-sub2api-account-priority" class="data-input mono" value="1" min="1" step="1" />
+      </div>
+      <div class="data-row" id="row-grok-sub2api-default-proxy" style="display:none;">
+        <span class="data-label">默认代理</span>
+        <input type="text" id="input-grok-sub2api-default-proxy" class="data-input" placeholder="留空则不使用代理；或填写代理名称 / ID" />
       </div>
       <div class="data-row" id="row-codex2api-url" style="display:none;">
         <span class="data-label">Codex2API</span>
@@ -210,6 +256,26 @@
         <span class="data-label">上传状态</span>
         <span id="display-openai-webchat-upload-status" class="data-value mono truncate">未开始</span>
       </div>
+      <div class="data-row" id="row-openai-chatgpt2api-url" style="display:none;">
+        <span class="data-label">ChatGPT2API</span>
+        <input type="text" id="input-openai-chatgpt2api-url" class="data-input"
+          placeholder="http://localhost:8000" />
+      </div>
+      <div class="data-row" id="row-openai-chatgpt2api-key" style="display:none;">
+        <span class="data-label">管理密钥</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-openai-chatgpt2api-key" class="data-input data-input-with-icon"
+            placeholder="请输入 ChatGPT2API Admin Key" />
+          <button id="btn-toggle-openai-chatgpt2api-key" class="input-icon-btn" type="button"
+            data-password-toggle="input-openai-chatgpt2api-key" data-show-label="显示 ChatGPT2API Admin Key"
+            data-hide-label="隐藏 ChatGPT2API Admin Key" aria-label="显示 ChatGPT2API Admin Key"
+            title="显示 ChatGPT2API Admin Key"></button>
+        </div>
+      </div>
+      <div class="data-row" id="row-openai-chatgpt2api-upload-status" style="display:none;">
+        <span class="data-label">上传状态</span>
+        <span id="display-openai-chatgpt2api-upload-status" class="data-value mono truncate">未开始</span>
+      </div>
       <div class="data-row" id="row-kiro-rs-url" style="display:none;">
         <span class="data-label">kiro.rs</span>
         <input type="text" id="input-kiro-rs-url" class="data-input"
@@ -261,6 +327,22 @@
             title="显示 webchat2api 管理密钥"></button>
         </div>
       </div>
+      <div class="data-row" id="row-grok2api-url" style="display:none;">
+        <span class="data-label">grok2api</span>
+        <input type="text" id="input-grok2api-url" class="data-input"
+          placeholder="请输入 grok2api 地址，例如 http://localhost:8000" />
+      </div>
+      <div class="data-row" id="row-grok2api-key" style="display:none;">
+        <span class="data-label">Admin Key</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-grok2api-key" class="data-input data-input-with-icon"
+            placeholder="请输入 grok2api Admin Key" />
+          <button id="btn-toggle-grok2api-key" class="input-icon-btn" type="button"
+            data-password-toggle="input-grok2api-key" data-show-label="显示 grok2api Admin Key"
+            data-hide-label="隐藏 grok2api Admin Key" aria-label="显示 grok2api Admin Key"
+            title="显示 grok2api Admin Key"></button>
+        </div>
+      </div>
       <div class="data-row" id="row-grok-register-status" style="display:none;">
         <span class="data-label">Grok 注册</span>
         <span id="display-grok-register-status" class="data-value mono">未开始</span>
@@ -268,10 +350,6 @@
       <div class="data-row" id="row-grok-sso-status" style="display:none;">
         <span class="data-label">SSO 状态</span>
         <span id="display-grok-sso-status" class="data-value mono">未提取</span>
-      </div>
-      <div class="data-row" id="row-grok-webchat2api-upload-status" style="display:none;">
-        <span class="data-label">上传状态</span>
-        <span id="display-grok-webchat2api-upload-status" class="data-value mono">未开始</span>
       </div>
       <div class="data-row" id="row-grok-sso-settings" style="display:none;">
         <span class="data-label">SSO Cookie</span>
@@ -297,6 +375,10 @@
             title="显示 mimo2api 管理密码"></button>
         </div>
       </div>
+      <div class="data-row" id="row-grok-upload-status" style="display:none;">
+        <span class="data-label">发布状态</span>
+        <span id="display-grok-upload-status" class="data-value mono">未开始</span>
+      </div>
       <div class="data-row module-divider-start" id="row-custom-password">
         <span class="data-label">账户密码</span>
         <div class="input-with-icon">
@@ -305,12 +387,12 @@
           <button id="btn-toggle-password" class="input-icon-btn" type="button" aria-label="显示密码" title="显示密码"></button>
         </div>
       </div>
-      <div class="data-row" id="row-plus-mode">
+      <div class="data-row" id="row-plus-mode" style="display:none;">
         <span class="data-label">Plus 模式</span>
         <div class="data-inline setting-pair">
           <div class="setting-group setting-group-primary">
             <label class="toggle-switch" for="input-plus-mode-enabled" title="开启后使用 Plus Checkout 支付授权流程">
-              <input type="checkbox" id="input-plus-mode-enabled" />
+              <input type="checkbox" id="input-plus-mode-enabled" disabled />
               <span class="toggle-switch-track" aria-hidden="true">
                 <span class="toggle-switch-thumb"></span>
               </span>
@@ -335,13 +417,9 @@
           <select id="select-plus-payment-method" class="data-select">
             <option value="none">无需支付</option>
             <option value="paypal-hosted">PayPal 无卡直绑</option>
-            <option value="paypal">PayPal</option>
-            <option value="gpc-helper">GPC</option>
-            <option value="plus-auto" selected>Plus 自动充值</option>
+            <option value="paypal" selected>PayPal</option>
           </select>
-          <button id="btn-gpc-card-key-purchase" class="btn btn-outline btn-sm data-inline-btn" type="button" style="display:none;">购买卡密</button>
-          <button id="btn-auto-cdk-purchase" class="btn btn-outline btn-sm data-inline-btn" type="button" style="display:none;">获取卡密</button>
-          <span class="setting-caption" id="plus-payment-method-caption">GPC 网页充值链路</span>
+          <span class="setting-caption" id="plus-payment-method-caption">PayPal 订阅链路</span>
         </div>
       </div>
       <div class="data-row" id="row-paypal-account" style="display:none;">
@@ -375,32 +453,6 @@
           <input type="number" id="input-plus-hosted-checkout-oauth-delay-seconds" class="data-input auto-delay-input"
             value="3" min="0" max="120" step="1" />
           <span class="setting-caption">支付成功页出现后再继续账号接入</span>
-        </div>
-      </div>
-      <div class="data-row" id="row-gpc-card-key" style="display:none;">
-        <span class="data-label">GPC 卡密</span>
-        <div class="data-inline gpc-card-key-inline">
-          <div class="input-with-icon">
-            <input type="password" id="input-gpc-card-key" class="data-input data-input-with-icon"
-              placeholder="请输入 GPC 卡密" autocomplete="off" />
-            <button id="btn-toggle-gpc-card-key" class="input-icon-btn" type="button"
-              data-password-toggle="input-gpc-card-key" data-show-label="显示 GPC 卡密"
-              data-hide-label="隐藏 GPC 卡密" aria-label="显示 GPC 卡密" title="显示 GPC 卡密"></button>
-          </div>
-          <button id="btn-gpc-card-key-query" class="btn btn-outline btn-sm data-inline-btn" type="button">查询</button>
-          <span id="display-gpc-card-key-status" class="data-value mono">等待输入</span>
-        </div>
-      </div>
-      <div class="data-row" id="row-auto-cdk" style="display:none;">
-        <span class="data-label">Plus 自动充值卡密</span>
-        <div class="data-inline gpc-card-key-inline">
-          <div class="input-with-icon">
-            <input type="password" id="input-auto-cdk" class="data-input data-input-with-icon"
-              placeholder="请输入 Plus 自动充值卡密（QZ-XXXX-XXXX-XXXX）" autocomplete="off" />
-            <button id="btn-toggle-auto-cdk" class="input-icon-btn" type="button"
-              data-password-toggle="input-auto-cdk" data-show-label="显示 Plus 自动充值卡密"
-              data-hide-label="隐藏 Plus 自动充值卡密" aria-label="显示 Plus 自动充值卡密" title="显示 Plus 自动充值卡密"></button>
-          </div>
         </div>
       </div>
       <div class="data-row module-divider-start" id="row-mail-provider">
@@ -460,6 +512,16 @@
           <option value="cloudflare-temp-email">Cloudflare Temp Email（推荐）</option>
           <option value="cloudmail">Cloud Mail</option>
         </select>
+      </div>
+      <div class="data-row" id="row-duck-ddg-token" style="display:none;">
+        <span class="data-label">DDG Token</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-duck-ddg-token" class="data-input data-input-with-icon mono"
+            placeholder="可留空，首次生成时自动获取并回填" />
+          <button id="btn-toggle-duck-ddg-token" class="input-icon-btn" type="button"
+            data-password-toggle="input-duck-ddg-token" data-show-label="显示 DDG Token"
+            data-hide-label="隐藏 DDG Token" aria-label="显示 DDG Token" title="显示 DDG Token"></button>
+        </div>
       </div>
       <div class="data-row data-check-row" id="row-custom-email-pool" style="display:none;">
         <span class="data-label">邮箱池</span>
@@ -1893,7 +1955,6 @@
   <script src="../managed-alias-utils.js"></script>
   <script src="../mail2925-utils.js"></script>
   <script src="../paypal-utils.js"></script>
-  <script src="../gpc-utils.js"></script>
   <script src="../phone-sms/providers/hero-sms.js"></script>
   <script src="../phone-sms/providers/five-sim.js"></script>
   <script src="../phone-sms/providers/nexsms.js"></script>
@@ -1916,6 +1977,9 @@
   <script src="../flows/index.js"></script>
   <script src="../core/flow-kernel/flow-registry.js"></script>
   <script src="../shared/contribution-registry.js"></script>
+  <script src="../shared/i18n/catalog.js"></script>
+  <script src="../shared/i18n/runtime.js"></script>
+  <script src="i18n-static.js"></script>
   <script src="../core/flow-kernel/settings-schema.js"></script>
   <script src="../core/flow-kernel/flow-capabilities.js"></script>
   <script src="../data/step-definitions.js"></script>

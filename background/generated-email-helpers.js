@@ -9,7 +9,6 @@
       buildCloudflareTempEmailHeaders,
       CLOUDFLARE_TEMP_EMAIL_GENERATOR,
       CUSTOM_EMAIL_POOL_GENERATOR,
-      DUCK_AUTOFILL_URL,
       fetch,
       fetchIcloudHideMyEmail,
       getCloudflareTempEmailAddressFromResponse,
@@ -18,7 +17,9 @@
       getRegistrationEmailBaseline,
       getState,
       ensureMail2925AccountForFlow,
+      fetchDuckEmailWithToken = null,
       joinCloudflareTempEmailUrl,
+      normalizeDuckDdgToken = (value = '') => String(value || '').trim(),
       normalizeCloudflareDomain,
       normalizeCloudflareTempEmailAddress,
       normalizeEmailGenerator,
@@ -26,8 +27,6 @@
       persistRegistrationEmailState = null,
       buildNaturalEmailLocalPart = root.MultiPageEmailLocalPartHelpers?.buildNaturalEmailLocalPart,
       buildRandomNameDateTimeLocalPart = root.MultiPageEmailLocalPartHelpers?.buildRandomNameDateTimeLocalPart,
-      reuseOrCreateTab,
-      sendToContentScript,
       setEmailState,
       throwIfStopped,
     } = deps;
@@ -210,43 +209,25 @@
       return address;
     }
 
-    function normalizeEmailForComparison(value) {
-      return String(value || '').trim().toLowerCase();
-    }
-
-    async function fetchDuckEmail(options = {}) {
+    async function fetchDuckEmailViaToken(state, options = {}) {
+      if (typeof fetchDuckEmailWithToken !== 'function') {
+        throw new Error('DuckDuckGo Token 直连能力尚未接入。');
+      }
       throwIfStopped();
-      const {
-        generateNew = true,
-        baselineEmail = '',
-        state = null,
-      } = options;
-
-      await addLog(`Duck 邮箱：正在打开自动填充设置（${generateNew ? '生成新地址' : '复用当前地址'}）...`);
-      await reuseOrCreateTab('duck-mail', DUCK_AUTOFILL_URL);
-
-      const result = await sendToContentScript('duck-mail', {
-        type: 'FETCH_DUCK_EMAIL',
-        source: 'background',
-        payload: {
-          generateNew,
-          baselineEmail: normalizeEmailForComparison(baselineEmail),
-        },
+      const latestState = state || await getState();
+      const result = await fetchDuckEmailWithToken(latestState, {
+        ...options,
+        duckDdgToken: normalizeDuckDdgToken(options.duckDdgToken ?? latestState.duckDdgToken),
       });
-
-      if (result?.error) {
-        throw new Error(result.error);
+      const email = String(result?.email || '').trim().toLowerCase();
+      if (!email) {
+        throw new Error('DuckDuckGo Token 直连未返回可用邮箱。');
       }
-      if (!result?.email) {
-        throw new Error('未返回 Duck 邮箱地址。');
-      }
-
-      await persistResolvedEmailState(state, result.email, {
+      await persistResolvedEmailState(latestState, email, {
         source: 'generated:duck',
         preserveAccountIdentity: Boolean(options?.preserveAccountIdentity),
       });
-      await addLog(`Duck 邮箱：${result.generated ? '已生成' : '已读取'} ${result.email}`, 'ok');
-      return result.email;
+      return email;
     }
 
     async function fetchCustomEmailPoolEmail(state, options = {}) {
@@ -325,6 +306,9 @@
         mail2925Mode,
         emailGenerator: generator,
       };
+      if (options.duckDdgToken !== undefined) {
+        mergedState.duckDdgToken = normalizeDuckDdgToken(options.duckDdgToken);
+      }
       if (options.gmailBaseEmail !== undefined) {
         mergedState.gmailBaseEmail = String(options.gmailBaseEmail || '').trim();
       }
@@ -379,9 +363,8 @@
           || mergedState.email
           || ''
         ).trim();
-      return fetchDuckEmail({
+      return fetchDuckEmailViaToken(mergedState, {
         ...options,
-        state: mergedState,
         baselineEmail: resolvedDuckBaselineEmail,
       });
     }
@@ -391,7 +374,6 @@
       fetchCloudflareEmail,
       fetchCustomEmailPoolEmail,
       fetchCloudflareTempEmailAddress,
-      fetchDuckEmail,
       fetchGeneratedEmail,
       buildDefaultCloudflareTempEmailLocalPart,
       buildDefaultGeneratedEmailLocalPart,

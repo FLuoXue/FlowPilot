@@ -16,7 +16,7 @@
     ? Object.keys(flowRegistryApi.getTargetDefinitions('openai') || {})
     : (Array.isArray(flowRegistryApi.OPENAI_TARGET_IDS)
       ? flowRegistryApi.OPENAI_TARGET_IDS.slice()
-      : ['cpa', 'sub2api', 'codex2api']);
+      : ['cpa', 'sub2api', 'codex2api', 'webchat', 'chatgpt2api']);
   const REGISTERED_FLOW_IDS = Array.isArray(flowRegistryApi.getRegisteredFlowIds?.())
     ? flowRegistryApi.getRegisteredFlowIds().map((flowId) => String(flowId || '').trim().toLowerCase()).filter(Boolean)
     : [DEFAULT_FLOW_ID];
@@ -78,6 +78,8 @@
     'openaiWebchatUrl',
     'openaiWebchatAdminKey',
     'openaiWebchatUploadEnabled',
+    'openaiChatgpt2ApiUrl',
+    'openaiChatgpt2ApiAdminKey',
   ]);
 
   const OPENAI_TARGET_CAPABILITIES = Object.freeze(
@@ -191,6 +193,9 @@
     if (normalized === 'cpa') {
       return 'CPA';
     }
+    if (normalized === 'chatgpt2api') {
+      return 'ChatGPT2API';
+    }
     return normalized || String(targetId || '').trim();
   }
 
@@ -285,6 +290,66 @@
       };
     }
 
+    function resolveOpenAiChatgpt2ApiState(state = {}, targetId = '') {
+      const openAiFlow = getOpenAiFlowSettingsFromState(state);
+      const targetConfig = isPlainObject(openAiFlow?.targets?.chatgpt2api)
+        ? openAiFlow.targets.chatgpt2api
+        : {};
+      const baseUrl = cleanString(hasOwn(state, 'openaiChatgpt2ApiUrl')
+        ? state.openaiChatgpt2ApiUrl
+        : targetConfig.baseUrl);
+      const apiKey = cleanString(hasOwn(state, 'openaiChatgpt2ApiAdminKey')
+        ? state.openaiChatgpt2ApiAdminKey
+        : targetConfig.apiKey);
+      const normalizedTargetId = String(targetId || '').trim().toLowerCase();
+      const targetIsChatgpt2Api = normalizedTargetId === 'chatgpt2api';
+      const missingFields = [];
+      if (!baseUrl) missingFields.push('baseUrl');
+      if (!apiKey) missingFields.push('apiKey');
+      return {
+        configComplete: missingFields.length === 0,
+        missingFields,
+        targetIsChatgpt2Api,
+        uploadRequired: targetIsChatgpt2Api,
+      };
+    }
+
+    function resolveGrok2ApiState(state = {}, targetId = '') {
+      const normalizedState = getNormalizedSettingsState(state);
+      const grokFlow = isPlainObject(normalizedState?.flows?.grok)
+        ? normalizedState.flows.grok
+        : (isPlainObject(state?.settingsState?.flows?.grok) ? state.settingsState.flows.grok : {});
+      const grok2ApiConfig = isPlainObject(grokFlow?.targets?.grok2api)
+        ? grokFlow.targets.grok2api
+        : {};
+      const sub2apiConfig = isPlainObject(grokFlow?.targets?.sub2api)
+        ? grokFlow.targets.sub2api
+        : {};
+      const normalizedTargetId = String(targetId || '').trim().toLowerCase();
+      const dualUploadEnabled = normalizedTargetId === 'sub2api' && Boolean(
+        hasOwn(state, 'grokSub2apiGrok2ApiUploadEnabled')
+          ? state.grokSub2apiGrok2ApiUploadEnabled
+          : sub2apiConfig.grok2apiUploadEnabled
+      );
+      const targetIsGrok2Api = normalizedTargetId === 'grok2api';
+      const baseUrl = cleanString(hasOwn(state, 'grok2ApiUrl')
+        ? state.grok2ApiUrl
+        : grok2ApiConfig.baseUrl);
+      const apiKey = cleanString(hasOwn(state, 'grok2ApiAdminKey')
+        ? state.grok2ApiAdminKey
+        : grok2ApiConfig.apiKey);
+      const missingFields = [];
+      if (!baseUrl) missingFields.push('baseUrl');
+      if (!apiKey) missingFields.push('apiKey');
+      return {
+        configComplete: missingFields.length === 0,
+        dualUploadEnabled,
+        missingFields,
+        targetIsGrok2Api,
+        uploadRequired: targetIsGrok2Api || dualUploadEnabled,
+      };
+    }
+
     function buildOpenAiWebchatValidationError(capabilityState = {}) {
       const webchatState = capabilityState.openaiWebchat || {};
       if (webchatState.targetIsWebchat) {
@@ -296,6 +361,20 @@
       return {
         code: 'openai_webchat_upload_config_required',
         message: '请选择 webchat 来源并完成配置后再开启同步。',
+      };
+    }
+
+    function buildOpenAiChatgpt2ApiValidationError() {
+      return {
+        code: 'openai_chatgpt2api_config_required',
+        message: 'ChatGPT2API source requires URL and Admin Key configuration.',
+      };
+    }
+
+    function buildGrok2ApiValidationError() {
+      return {
+        code: 'grok2api_config_required',
+        message: 'grok2api 上传需要先完成地址和 Admin Key 配置。',
       };
     }
 
@@ -488,6 +567,23 @@
           uploadEnabled: false,
           uploadRequired: false,
         };
+      const openaiChatgpt2Api = activeFlowId === 'openai'
+        ? resolveOpenAiChatgpt2ApiState(state, effectiveTargetId)
+        : {
+          configComplete: true,
+          missingFields: [],
+          targetIsChatgpt2Api: false,
+          uploadRequired: false,
+        };
+      const grok2Api = activeFlowId === 'grok'
+        ? resolveGrok2ApiState(state, effectiveTargetId)
+        : {
+          configComplete: true,
+          dualUploadEnabled: false,
+          missingFields: [],
+          targetIsGrok2Api: false,
+          uploadRequired: false,
+        };
 
       return {
         activeFlowId,
@@ -505,7 +601,9 @@
         effectiveSignupMethods,
         effectiveTargetId,
         flowCapabilities: flowState,
+        openaiChatgpt2Api,
         openaiWebchat,
+        grok2Api,
         panelCapabilities: targetState,
         requestedPlusAccountAccessStrategy,
         requestedSignupMethod,
@@ -520,7 +618,9 @@
           plusAccountAccessStrategy: effectivePlusAccountAccessStrategy,
           plusModeEnabled: runtimeLocks.plusModeEnabled,
           phoneVerificationEnabled: runtimeLocks.phoneVerificationEnabled,
+          openaiChatgpt2ApiUploadEnabled: openaiChatgpt2Api.uploadRequired,
           openaiWebchatUploadEnabled: openaiWebchat.uploadRequired,
+          grokSub2apiGrok2ApiUploadEnabled: grok2Api.dualUploadEnabled,
           signupMethod: effectiveSignupMethod,
         },
         supportedPanelModes: supportedTargetIds,
@@ -615,6 +715,20 @@
         && !capabilityState.openaiWebchat?.configComplete
       ) {
         errors.push(buildOpenAiWebchatValidationError(capabilityState));
+      }
+      if (
+        capabilityState.activeFlowId === 'openai'
+        && capabilityState.openaiChatgpt2Api?.uploadRequired
+        && !capabilityState.openaiChatgpt2Api?.configComplete
+      ) {
+        errors.push(buildOpenAiChatgpt2ApiValidationError(capabilityState));
+      }
+      if (
+        capabilityState.activeFlowId === 'grok'
+        && capabilityState.grok2Api?.uploadRequired
+        && !capabilityState.grok2Api?.configComplete
+      ) {
+        errors.push(buildGrok2ApiValidationError());
       }
 
       return {
