@@ -26,7 +26,7 @@
   ]);
   const MIMO_COOKIE_SOURCE_URL = 'https://aistudio.xiaomimimo.com';
   const MIMO_REQUIRED_COOKIE_NAMES = Object.freeze([
-    'serviceToken',
+    'xiaomichatbot_serviceToken',
     'userId',
     'xiaomichatbot_ph',
   ]);

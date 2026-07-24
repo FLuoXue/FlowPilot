@@ -42,7 +42,7 @@
   function stripCookieQuotes(value = '') {
     const text = cleanString(value);
     // RFC 6265 允许 cookie 值用成对双引号包裹（cookie-value = DQUOTE *cookie-octet DQUOTE），
-    // 小米的 serviceToken / xiaomichatbot_ph 正是被服务端这样下发的。chrome.cookies.get 会把引号
+    // 小米的 xiaomichatbot_serviceToken / xiaomichatbot_ph 正是被服务端这样下发的。chrome.cookies.get 会把引号
     // 原样带回；旧的 Cookie 头鉴权时引号无所谓，但现在要作为 JSON 字段单独上传，必须取引号内的真实
     // token，否则 mimo2api 收到的值会多一层引号导致校验失败。
     if (text.length >= 2 && text.startsWith('"') && text.endsWith('"')) {
@@ -160,7 +160,7 @@
       }
     }
     return {
-      serviceToken: stripCookieQuotes(map.serviceToken),
+      xiaomichatbot_serviceToken: stripCookieQuotes(map.xiaomichatbot_serviceToken),
       userId: stripCookieQuotes(map.userId),
       xiaomichatbot_ph: stripCookieQuotes(map.xiaomichatbot_ph),
     };
@@ -178,7 +178,7 @@
 
   function buildMimoAccountPayload(cookieValues = {}, name = '', password = '') {
     const payload = {
-      serviceToken: cleanString(cookieValues.serviceToken),
+      xiaomichatbot_serviceToken: cleanString(cookieValues.xiaomichatbot_serviceToken),
       userId: cleanString(cookieValues.userId),
       xiaomichatbot_ph: cleanString(cookieValues.xiaomichatbot_ph),
     };
@@ -285,8 +285,8 @@
           throw new Error('缺少 mimo2api 管理密码。');
         }
         const cookieValues = parseMimoCookieValues(currentState);
-        if (!cookieValues.serviceToken) {
-          throw new Error('缺少小米登录 Cookie（serviceToken），请先完成步骤 6。');
+        if (!cookieValues.xiaomichatbot_serviceToken) {
+          throw new Error('缺少小米登录 Cookie（xiaomichatbot_serviceToken），请先完成步骤 6。');
         }
         const payload = buildMimoAccountPayload(
           cookieValues,

@@ -26,7 +26,7 @@ test('uploadMimoAccountToMimo2Api uses Bearer auth and posts account fields to /
   const result = await publisher.uploadMimoAccountToMimo2Api(
     'https://mimo.example.com',
     'admin-secret',
-    { serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph', name: 'a@b.com', password: 'pw' },
+    { xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph', name: 'a@b.com', password: 'pw' },
     fetchImpl
   );
 
@@ -39,7 +39,7 @@ test('uploadMimoAccountToMimo2Api uses Bearer auth and posts account fields to /
   // 不再依赖 Cookie 鉴权。
   assert.notEqual(calls[0].options.credentials, 'include');
   assert.deepEqual(JSON.parse(calls[0].options.body), {
-    serviceToken: 'st',
+    xiaomichatbot_serviceToken: 'st',
     userId: 'uid',
     xiaomichatbot_ph: 'ph',
     name: 'a@b.com',
@@ -77,38 +77,38 @@ test('uploadMimoAccountToMimo2Api surfaces server error message on non-ok respon
 
 test('buildMimoAccountPayload includes optional name/password only when present', () => {
   assert.deepEqual(
-    publisher.buildMimoAccountPayload({ serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }, '', ''),
-    { serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }
+    publisher.buildMimoAccountPayload({ xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }, '', ''),
+    { xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }
   );
   assert.deepEqual(
-    publisher.buildMimoAccountPayload({ serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }, '备注', 'pw'),
-    { serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph', name: '备注', password: 'pw' }
+    publisher.buildMimoAccountPayload({ xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }, '备注', 'pw'),
+    { xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph', name: '备注', password: 'pw' }
   );
 });
 
 test('parseMimoCookieValues reads the three values from cookies array or cookie string', () => {
   assert.deepEqual(
-    publisher.parseMimoCookieValues({ mimoCookies: ['serviceToken=st', 'userId=uid', 'xiaomichatbot_ph=ph'] }),
-    { serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }
+    publisher.parseMimoCookieValues({ mimoCookies: ['xiaomichatbot_serviceToken=st', 'userId=uid', 'xiaomichatbot_ph=ph'] }),
+    { xiaomichatbot_serviceToken: 'st', userId: 'uid', xiaomichatbot_ph: 'ph' }
   );
   assert.deepEqual(
-    publisher.parseMimoCookieValues({ mimoCookie: 'serviceToken=st2; userId=uid2; xiaomichatbot_ph=ph2' }),
-    { serviceToken: 'st2', userId: 'uid2', xiaomichatbot_ph: 'ph2' }
+    publisher.parseMimoCookieValues({ mimoCookie: 'xiaomichatbot_serviceToken=st2; userId=uid2; xiaomichatbot_ph=ph2' }),
+    { xiaomichatbot_serviceToken: 'st2', userId: 'uid2', xiaomichatbot_ph: 'ph2' }
   );
 });
 
 test('parseMimoCookieValues strips RFC6265 surrounding double quotes (Xiaomi quoted cookie tokens)', () => {
-  // 还原真实问题：serviceToken / xiaomichatbot_ph 被服务端用双引号包裹下发，userId 不带引号。
+  // 还原真实问题：xiaomichatbot_serviceToken / xiaomichatbot_ph 被服务端用双引号包裹下发，userId 不带引号。
   assert.deepEqual(
     publisher.parseMimoCookieValues({
-      mimoCookies: ['serviceToken="/vjQa88+abc/=="', 'userId=6877030629', 'xiaomichatbot_ph="ZD7zZ6==/q=="'],
+      mimoCookies: ['xiaomichatbot_serviceToken="/vjQa88+abc/=="', 'userId=6877030629', 'xiaomichatbot_ph="ZD7zZ6==/q=="'],
     }),
-    { serviceToken: '/vjQa88+abc/==', userId: '6877030629', xiaomichatbot_ph: 'ZD7zZ6==/q==' }
+    { xiaomichatbot_serviceToken: '/vjQa88+abc/==', userId: '6877030629', xiaomichatbot_ph: 'ZD7zZ6==/q==' }
   );
   // 组合 cookie 字符串路径同样去掉包裹引号。
   assert.deepEqual(
-    publisher.parseMimoCookieValues({ mimoCookie: 'serviceToken="t1"; userId=uid; xiaomichatbot_ph="p1"' }),
-    { serviceToken: 't1', userId: 'uid', xiaomichatbot_ph: 'p1' }
+    publisher.parseMimoCookieValues({ mimoCookie: 'xiaomichatbot_serviceToken="t1"; userId=uid; xiaomichatbot_ph="p1"' }),
+    { xiaomichatbot_serviceToken: 't1', userId: 'uid', xiaomichatbot_ph: 'p1' }
   );
 });
 
@@ -120,13 +120,13 @@ test('uploadMimoAccountToMimo2Api body carries unquoted tokens end-to-end', asyn
     return { ok: true, status: 200, statusText: 'OK', text: async () => '{}' };
   };
   const cookieValues = publisher.parseMimoCookieValues({
-    mimoCookies: ['serviceToken="tok+/=="', 'userId=6877030629', 'xiaomichatbot_ph="ph=="'],
+    mimoCookies: ['xiaomichatbot_serviceToken="tok+/=="', 'userId=6877030629', 'xiaomichatbot_ph="ph=="'],
   });
   const payload = publisher.buildMimoAccountPayload(cookieValues, 'elmolongcw@hotmail.com', 'pw');
   await publisher.uploadMimoAccountToMimo2Api('https://mimo.example.com', 'admin-secret', payload, fetchImpl);
 
   const sentBody = JSON.parse(calls[0].options.body);
-  assert.equal(sentBody.serviceToken, 'tok+/==');
+  assert.equal(sentBody.xiaomichatbot_serviceToken, 'tok+/==');
   assert.equal(sentBody.xiaomichatbot_ph, 'ph==');
   assert.equal(sentBody.userId, '6877030629');
   assert.doesNotMatch(calls[0].options.body, /\\"/);
